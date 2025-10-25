@@ -33,7 +33,7 @@ clientapp = "flower_app.client_app:app"
 
 # Custom config values accessible via `context.run_config`
 [tool.flwr.app.config]
-num-server-rounds = 3
+num-server-rounds = 1
 penalty = "l2"
 local-epochs = 1
 

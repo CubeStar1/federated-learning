@@ -6,6 +6,7 @@ from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
 
 from flower_app.task import get_model, get_model_params, set_initial_params, set_model_params
+from flower_app.telemetry import update_run_metrics
 
 # Create ServerApp
 app = ServerApp()
@@ -36,6 +37,13 @@ def main(grid: Grid, context: Context) -> None:
         initial_arrays=arrays,
         num_rounds=num_rounds,
     )
+
+    print(result.evaluate_metrics_clientapp)
+    print(result.train_metrics_clientapp)
+
+    run_id = context.run_config.get("current-run-id")
+
+    update_run_metrics(run_id, result.evaluate_metrics_clientapp, result.train_metrics_clientapp)
 
     # Save final model parameters
     print("\nSaving final model to disk...")
