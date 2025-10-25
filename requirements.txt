@@ -1,0 +1,5 @@
+supabase
+psutil
+dotenv
+uvicorn
+fastapi

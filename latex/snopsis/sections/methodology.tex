@@ -1,0 +1,26 @@
+\textbf{Dataset:} Medical imaging datasets (chest X-rays, CT scans) with 1,000-10,000 images per hospital. Each hospital maintains local datasets with different patient demographics and disease prevalence. All data remains on hospital premises with local anonymization; zero raw data transmission.
+
+\textbf{Task 1: Architecture Design}
+Design coordinator-client federated learning system; define communication protocols; plan Supabase database schema for metadata and training logs.
+
+\textbf{Task 2: Coordinator Server (Aggregator)}
+Implement Next.js admin dashboard for orchestration; develop FastAPI coordination server with JWT authentication; integrate Flower SuperLink for federated aggregation; setup real-time WebSocket updates.
+
+\textbf{Task 3: Hospital Client Nodes}
+Build Next.js client dashboard for local monitoring; develop FastAPI client server; implement Flower SuperNode for local training; create data preprocessing pipelines with no data upload capability.
+
+\textbf{Task 4: Security Layer}
+Configure TLS/SSL encryption for all communications; implement role-based access control (RBAC); add comprehensive audit logging for HIPAA/GDPR compliance.
+
+\textbf{Task 5: Training Pipeline}
+Implement federated averaging algorithm; develop training round orchestration; create model validation, checkpointing, and versioning systems.
+
+\textbf{Task 6: Deployment}
+Deploy coordinator on Vercel/cloud; containerize clients with Docker; conduct end-to-end testing with 3+ simulated hospitals; perform security audits.
+
+% Add architecture diagram
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/fedml-architeture.png}
+    \caption{Proposed Architecture}
+\end{figure}

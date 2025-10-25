@@ -1,0 +1,2 @@
+flower-superlink --insecure
+flower-supernode  --insecure   --superlink 127.0.0.1:9092   --clientappio-api-address 127.0.0.1:9094    --node-config "partition-id=0 num-partitions=2"    

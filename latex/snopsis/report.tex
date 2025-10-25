@@ -1,0 +1,127 @@
+\documentclass[12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{times}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% Page geometry
+\geometry{
+    a4paper,
+    left=1in,
+    right=1in,
+    bottom=1in,
+    includefoot
+}
+
+% Set line spacing to 1.5
+\onehalfspacing
+
+% Format headings - TNR 14pt BOLD for all headings
+\titleformat{\chapter}[display]
+  {\normalfont\fontsize{14}{17}\bfseries}
+  {}
+  {-30pt}
+  {\centering}
+\titlespacing*{\chapter}{0pt}{-40pt}{20pt}
+
+\titleformat{\section}
+  {\normalfont\fontsize{14}{17}\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{17}\bfseries}{\thesubsection}{1em}{}
+
+% Set normal text size to 12pt Times New Roman
+\renewcommand{\normalsize}{\fontsize{12}{14.5}\selectfont}
+
+% Title page style
+\fancypagestyle{plain}{
+    \fancyhf{} % Clear all headers and footers
+    \fancyhead[L]{Federated Learning Platform for Healthcare}
+    \fancyhead[R]{AIML}
+    \fancyfoot[L]{Dept. of ISE, RVCE}
+    \fancyfoot[R]{\thepage}
+    \fancyfoot[C]{2025-26}
+    \renewcommand{\headrulewidth}{1pt}
+    \renewcommand{\footrulewidth}{1pt}
+}
+
+\pagestyle{fancy}
+\fancyhf{} % Clear all headers and footers
+\fancyhead[L]{Federated Learning Platform for Healthcare}
+\fancyhead[R]{AIML}
+\fancyfoot[L]{Dept. of ISE, RVCE}
+\fancyfoot[R]{\thepage}
+\fancyfoot[C]{2025-26}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+
+
+% Custom simple cover page matching provided image (no logos)
+\renewcommand{\maketitle}{%
+    \begin{titlepage}
+        \centering
+        % Top spacing to match image layout
+        \vspace*{0.5cm}
+
+        {\Large\bfseries RV COLLEGE OF ENGINEERING\textsuperscript{\textregistered}}\\[0.3cm]
+        {\large BENGALURU-560059}\\[0.2cm]
+        {\normalsize (Autonomous Institution Affiliated to VTU, Belagavi)}\\[3cm]
+
+        {\large Federated Learning Platform for Healthcare: Privacy-Preserving Collaborative Medical AI}\\[0.3cm]
+        {\normalsize \textbf{Synopsis}}\\[0.2cm]
+        {\normalsize \textbf{For}}\\[0.2cm]
+        {\normalsize \textbf{AIML -Part B Project}}\\[0.2cm]
+        {\small \textit{Submitted By}}\\[0.5cm]
+
+        {\normalsize Avinash Anish (1RV23IS145)\\
+        Mohammed Huzaif S (1RV23IS073)}\\[4cm]
+
+        % Lab/Batch and Department at the bottom
+        {\normalsize Lab Batch : A1}\\[2cm]
+
+        {\large Department of Information Science and Engineering}\\[0.2cm]
+        {\normalsize Academic year -- 2025-26}
+
+        \vfill
+    \end{titlepage}%
+}
+
+\author{Department of Information Science and Engineering\\
+        RV College of Engineering}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{1. Brief Introduction}
+\input{sections/brief_introduction.tex}
+
+\section*{2. Problem Statement}
+\input{sections/problem_statement.tex}
+
+\section*{3. Objectives}
+\input{sections/objectives.tex}
+
+\section*{4. Methodology}
+\input{sections/methodology.tex}
+
+\section*{5. Expected Results}
+\input{sections/expected_results.tex}
+
+\section*{6. Innovative Contribution / Uniqueness in the Work}
+\input{sections/innovation.tex}
+
+\end{document}
