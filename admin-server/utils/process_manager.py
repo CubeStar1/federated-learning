@@ -222,23 +222,23 @@ class ProcessManager:
             cmd.append("--stream")
 
         session_id: Optional[str] = None
-        if self.supabase.enabled and self.coordinator_node_id:
-            session = await self.supabase.insert(
-                "node_sessions",
-                {
-                    "node_id": self.coordinator_node_id,
-                    "status": "starting",
-                    "runtime_config": {
-                        "federation_name": request.federation_name,
-                        "extra_args": request.extra_args,
-                    },
-                    "log_stream": "",
-                },
-            )
-            if session:
-                session_id = session["id"]
-                self.run_session_id = session_id
-                self.session_logs[session_id] = ""
+        # if self.supabase.enabled and self.coordinator_node_id:
+        #     session = await self.supabase.insert(
+        #         "node_sessions",
+        #         {
+        #             "node_id": self.coordinator_node_id,
+        #             "status": "starting",
+        #             "runtime_config": {
+        #                 "federation_name": request.federation_name,
+        #                 "extra_args": request.extra_args,
+        #             },
+        #             "log_stream": "",
+        #         },
+        #     )
+        #     if session:
+        #         session_id = session["id"]
+        #         self.run_session_id = session_id
+        #         self.session_logs[session_id] = ""
 
         run_id: Optional[str] = None
         if self.supabase.enabled and self.project_id:
@@ -282,16 +282,16 @@ class ProcessManager:
             "run_id": run_id or "",
         }
 
-        if session_id and self.supabase.enabled:
-            await self.supabase.update(
-                "node_sessions",
-                {"id": session_id},
-                {
-                    "status": "running",
-                    "pid": process.pid,
-                    "started_at": started_at.isoformat(),
-                },
-            )
+        # if session_id and self.supabase.enabled:
+        #     await self.supabase.update(
+        #         "node_sessions",
+        #         {"id": session_id},
+        #         {
+        #             "status": "running",
+        #             "pid": process.pid,
+        #             "started_at": started_at.isoformat(),
+        #         },
+        #     )
         if run_id and self.supabase.enabled:
             await self.supabase.update(
                 "federated_runs",
