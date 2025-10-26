@@ -21,8 +21,9 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 - `client-server/` – FastAPI service for managing SuperNodes (mirrors admin structure).
 - `flower-app/` – Flower application that executes local training workloads.
 - `db/schema.sql` – Supabase schema for projects, nodes, sessions, and runs.
+- `frontend/` – Next.js dashboard for administrators and participants.
 
-## Services and endpoints
+## Backend services and endpoints
 
 ### Admin server (`admin-server/main.py`)
 - `GET /health` – reports SuperLink state, active run info, and project id.
@@ -51,7 +52,7 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 
 - When a federated run starts, the generated `run_id` is stored in `flower-app/pyproject.toml` under `[tool.flwr.app.config]` as `current-run-id`, enabling the Flower telemetry pipeline to associate metrics with that run.
 
-## Running the service 
+## Running the backend services 
 
 1. Setup Flower:
 
@@ -101,6 +102,39 @@ PARTICIPANT_NODE_NAME= # display name for the participant node.
 ADMIN_CORS= # comma-separated list of allowed origins for CORS middleware (defaults to `*`).
 
 ```
+
+
+# Running the frontend dashboard
+
+1. Navigate to the `frontend/` directory.
+2. Set up environment variables by creating a `.env` file with the following content:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL= # Supabase REST endpoint.
+NEXT_PUBLIC_SUPABASE_ANON_KEY= # Supabase anon key.
+SUPABASE_ADMIN= # Supabase admin key.
+RESEND_API_KEY= # Resend API key. (https://resend.com/)
+RESEND_DOMAIN= # Resend domain.
+
+NEXT_PUBLIC_APP_NAME=FedML
+NEXT_PUBLIC_APP_ICON='/logos/fedml.webp'
+
+NEXT_PUBLIC_ADMIN_SERVER_URL=http://127.0.0.1:8000 # Admin server URL.
+
+```
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+3. Start the development server:
+
+```bash
+npm run dev
+```
+4. Open your browser and go to `http://localhost:3000/admin` to access the dashboard
+
 
 ## Architecture
 See the included architecture diagram for the full end-to-end flow. At a high level, Supabase stores metadata and telemetry, the admin server orchestrates training rounds via Flower SuperLink, client servers manage hospital SuperNodes, and frontend dashboards (Next.js) will surface health and metrics for both administrators and participants.

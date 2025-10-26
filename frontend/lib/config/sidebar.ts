@@ -9,7 +9,7 @@ const sidebarConfig: SidebarConfig = {
   },
   sections: [
     {
-      label: "Overview",
+      label: "Admin",
       items: [
         {
           title: "Home",
@@ -18,12 +18,12 @@ const sidebarConfig: SidebarConfig = {
         },
         {
           title: "Dashboard",
-          href: "/dashboard",
+          href: "/admin",
           icon: Icons.layoutDashboard
         },
         {
-          title: "Activity",
-          href: "/activity",
+          title: "Projects",
+          href: "/admin/projects",
           icon: Icons.activity
         }
       ]
