@@ -56,6 +56,21 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 - Admin dashboard at `http://localhost:3000/admin` to monitor projects, nodes, runs, and logs.
 - Participant dashboard at `http://localhost:3000/client` to view node status and run progress.
 
+#### Admin Dashboard Pages
+- **Main Dashboard**: Overview of active projects, recent runs, and system health metrics.  
+  ![Admin Dashboard](./frontend/public/landing/fedml-admin-dash.png)
+- **Control Panel**: Interface for starting/stopping SuperLink processes and managing federated runs.  
+  ![Admin Control Panel](./frontend/public/landing/fedml-admin-control-panel.png)
+- **Project Details**: Detailed view of project configuration, node status, and run history.  
+  ![Admin Project Details](./frontend/public/landing/fedml-admin-project-details.png)
+- **Training Metrics**: Visual representation of training metrics and performance over time.  
+  ![Admin Training Metrics](./frontend/public/landing/fedml-admin-run-details.png)
+- **Project Topology**: Visual representation of the federated network topology and node connections.  
+  ![Admin Project Topology](./frontend/public/landing/fedml-admin-project-details-topology.png)
+
+#### Client Dashboard Pages
+- **Project Details**: Participant view showing local node status, session information, and run progress.  
+  ![Client Project Details](./frontend/public/landing/fedml-client-project-details.png)
 
 ### Persistence and logging
 - Supabase tables (`projects`, `nodes`, `node_sessions`, `federated_runs`) hold configuration, lifecycle events, log streams, and metrics.
@@ -63,6 +78,8 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 - Process stdout/stderr is streamed to local files under `logs/` (`superlink.log`, `run.log`) and appended to the relevant Supabase records.
 
 - When a federated run starts, the generated `run_id` is stored in `flower-app/pyproject.toml` under `[tool.flwr.app.config]` as `current-run-id`, enabling the Flower telemetry pipeline to associate metrics with that run.
+
+  ![Database Schema](./docs/fedml-schema.png)
 
 ## Running the backend services 
 

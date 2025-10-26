@@ -56,7 +56,7 @@ export function AppSidebar({ config = defaultConfig, ...props }: AppSidebarProps
       <SidebarHeader>
         <div className="relative border-b border-border/10 px-6 py-5 backdrop-blur-xl">
           <Link href={config.brand?.href || "/"} className="relative flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-200 dark:bg-white">
               <Image
                 src="/logo/fed-ml-logo.png"
                 alt="Logo"
