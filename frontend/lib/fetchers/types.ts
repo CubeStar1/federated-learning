@@ -77,6 +77,24 @@ export interface SuperlinkStartPayload {
   extra_args?: string[];
 }
 
+export interface ClientHealthResponse {
+  supernode_running: boolean;
+  started_at: string | null;
+  log_path: string | null;
+  session_id: string | null;
+  project_id: string | null;
+}
+
+export interface SupernodeStartPayload {
+  superlink_address: string;
+  partition_id: number;
+  num_partitions: number;
+  clientappio_api_address?: string;
+  insecure?: boolean;
+  certificates_path?: string | null;
+  extra_args?: string[];
+}
+
 export interface RunStartPayload {
   federation_name?: string;
   stream?: boolean;
@@ -100,6 +118,13 @@ export interface RunStartResponse {
   pid?: string;
   log_path?: string;
   run_id?: string;
+  session_id?: string;
+}
+
+export interface SupernodeStartResponse {
+  status: string;
+  pid?: string;
+  log_path?: string;
   session_id?: string;
 }
 

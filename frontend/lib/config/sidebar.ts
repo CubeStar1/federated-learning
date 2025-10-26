@@ -9,22 +9,37 @@ const sidebarConfig: SidebarConfig = {
   },
   sections: [
     {
+      label: "Home",
+      items: [
+        {
+          title: "Dashboard",
+          href: "/",
+          icon: Icons.home
+        }
+      ]
+    },
+    {
       label: "Admin",
       items: [
         {
-          title: "Home",
-          href: "/",
-          icon: Icons.home
-        },
-        {
           title: "Dashboard",
           href: "/admin",
-          icon: Icons.layoutDashboard
+          icon: Icons.network
         },
         {
           title: "Projects",
           href: "/admin/projects",
           icon: Icons.activity
+        }
+      ]
+    },
+    {
+      label: "Client",
+      items: [
+        {
+          title: "Dashboard",
+          href: "/client",
+          icon: Icons.layoutDashboard
         }
       ]
     },

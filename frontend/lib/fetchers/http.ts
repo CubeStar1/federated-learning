@@ -10,7 +10,15 @@ const getAdminBaseUrl = (): string => {
   return stripTrailingSlash(url);
 };
 
-const adminHeaders = (): AxiosRequestConfig["headers"] => ({
+const getClientBaseUrl = (): string => {
+  const url = process.env.NEXT_PUBLIC_CLIENT_SERVER_URL;
+  if (!url) {
+    throw new Error("NEXT_PUBLIC_CLIENT_SERVER_URL is not configured");
+  }
+  return stripTrailingSlash(url);
+};
+
+const jsonHeaders = (): AxiosRequestConfig["headers"] => ({
   "Content-Type": "application/json",
   Accept: "application/json",
 });
@@ -20,7 +28,18 @@ export const adminRequest = async <T>(
 ): Promise<T> => {
   const response: AxiosResponse<T> = await axios({
     baseURL: getAdminBaseUrl(),
-    headers: adminHeaders(),
+    headers: jsonHeaders(),
+    ...config,
+  });
+  return response.data;
+};
+
+export const clientRequest = async <T>(
+  config: AxiosRequestConfig
+): Promise<T> => {
+  const response: AxiosResponse<T> = await axios({
+    baseURL: getClientBaseUrl(),
+    headers: jsonHeaders(),
     ...config,
   });
   return response.data;

@@ -54,7 +54,7 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 
 ### Frontend dashboard
 - Admin dashboard at `http://localhost:3000/admin` to monitor projects, nodes, runs, and logs.
-- Participant dashboard at `http://localhost:3000/participant` to view node status and run progress.
+- Participant dashboard at `http://localhost:3000/client` to view node status and run progress.
 
 
 ### Persistence and logging
@@ -132,6 +132,7 @@ NEXT_PUBLIC_APP_NAME=FedML
 NEXT_PUBLIC_APP_ICON='/logos/fedml.webp'
 
 NEXT_PUBLIC_ADMIN_SERVER_URL=http://127.0.0.1:8000 # Admin server URL.
+NEXT_PUBLIC_CLIENT_SERVER_URL=http://127.0.0.1:8001 # Client server URL.
 
 ```
 
