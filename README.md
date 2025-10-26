@@ -23,7 +23,14 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 - `db/schema.sql` – Supabase schema for projects, nodes, sessions, and runs.
 - `frontend/` – Next.js dashboard for administrators and participants.
 
-## Backend services and endpoints
+## Services and endpoints
+
+### Flower application (`flower-app/`)
+- Flower client (`flower-app/flower_app/client_app.py`) and server application (`flower-app/flower_app/server_app.py`) that runs federated learning workloads.
+
+- Server app contains the federated learning strategy and model aggregation logic.
+
+- Client app handles local training and evaluation logic.
 
 ### Admin server (`admin-server/main.py`)
 - `GET /health` – reports SuperLink state, active run info, and project id.
@@ -45,7 +52,12 @@ The repository hosts two FastAPI services that manage Flower SuperLink/SuperNode
 
 - `POST /supernode/stop` – stops the SuperNode process and updates Supabase session state.
 
-## Persistence and logging
+### Frontend dashboard
+- Admin dashboard at `http://localhost:3000/admin` to monitor projects, nodes, runs, and logs.
+- Participant dashboard at `http://localhost:3000/participant` to view node status and run progress.
+
+
+### Persistence and logging
 - Supabase tables (`projects`, `nodes`, `node_sessions`, `federated_runs`) hold configuration, lifecycle events, log streams, and metrics.
 
 - Process stdout/stderr is streamed to local files under `logs/` (`superlink.log`, `run.log`) and appended to the relevant Supabase records.
@@ -104,7 +116,7 @@ ADMIN_CORS= # comma-separated list of allowed origins for CORS middleware (defau
 ```
 
 
-# Running the frontend dashboard
+## Running the frontend dashboard
 
 1. Navigate to the `frontend/` directory.
 2. Set up environment variables by creating a `.env` file with the following content:
