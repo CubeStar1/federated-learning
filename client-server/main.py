@@ -37,6 +37,8 @@ async def health() -> dict[str, Any]:
         "log_path": str(STATE.log_path),
         "session_id": STATE.session_id,
         "project_id": STATE.project_id,
+        "node_id": STATE.node_id,
+        "user_id": STATE.user_id,
     }
 
 

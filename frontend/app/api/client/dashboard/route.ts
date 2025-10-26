@@ -31,12 +31,17 @@ export async function GET(request: NextRequest) {
       .from("projects")
       .select("*")
       .eq("id", projectId)
-      .eq("created_by", user.id)
       .maybeSingle();
 
     if (projectError) {
       return NextResponse.json({ error: projectError.message }, { status: 500 });
     }
+
+    if (!projectData) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    const project = projectData as Project;
 
     const { data: nodesData, error: nodesError } = await supabase
       .from("nodes")
@@ -49,8 +54,14 @@ export async function GET(request: NextRequest) {
     }
 
     const nodes = (nodesData ?? []) as Node[];
-    const nodeIds = nodes.map((node) => node.id);
+    const ownsProject = project.created_by === user.id;
+    const participatesInProject = nodes.some((node) => node.user_id === user.id);
 
+    if (!ownsProject && !participatesInProject) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const nodeIds = nodes.map((node) => node.id);
     let nodeSessions: NodeSession[] = [];
     if (nodeIds.length) {
       const { data: sessionsData, error: sessionsError } = await supabase
@@ -61,10 +72,7 @@ export async function GET(request: NextRequest) {
         .limit(100);
 
       if (sessionsError) {
-        return NextResponse.json(
-          { error: sessionsError.message },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: sessionsError.message }, { status: 500 });
       }
 
       nodeSessions = (sessionsData ?? []) as NodeSession[];
@@ -85,7 +93,7 @@ export async function GET(request: NextRequest) {
     const activeRun = runs.find((run) => run.status === "running") ?? null;
 
     const payload: DashboardData = {
-      project: (projectData ?? null) as Project | null,
+      project,
       nodes,
       nodeSessions,
       activeRun,

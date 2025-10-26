@@ -38,7 +38,11 @@ async def health() -> dict[str, Any]:
         if STATE.superlink_started_at
         else None,
         "run_info": STATE.run_info,
-        "project_id": STATE.project_id,
+        "default_project_id": STATE.default_project_id,
+        "active_project_id": STATE.active_project_id,
+        "default_coordinator_node_id": STATE.default_coordinator_node_id,
+        "active_coordinator_node_id": STATE.active_coordinator_node_id,
+        "active_user_id": STATE.active_user_id,
     }
 
 

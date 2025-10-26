@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +16,7 @@ import SuperlinkControls from "@/components/admin/control-center/superlink-contr
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import useUser from "@/hooks/use-user";
 import {
   fetchAdminHealth,
   fetchActiveRun,
@@ -58,6 +59,7 @@ const selectLatestSessionsByNode = (sessions: NodeSession[]) => {
 export default function ProjectControlPanelPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const queryClient = useQueryClient();
+  const { data: activeUser } = useUser();
 
   const {
     data: projectDetail,
@@ -128,7 +130,31 @@ export default function ProjectControlPanelPage() {
     [onlineNodes]
   );
 
-  const startSuperlinkMutation = useMutation({
+  const resolvedProjectId = useMemo(() => {
+    return (
+      projectDetail?.project.id ??
+      dashboard?.project?.id ??
+      health?.active_project_id ??
+      health?.default_project_id ??
+      projectId ??
+      null
+    );
+  }, [projectDetail?.project.id, dashboard?.project?.id, health?.active_project_id, health?.default_project_id, projectId]);
+
+  const resolvedCoordinatorNodeId = useMemo(() => {
+    return (
+      coordinatorNode?.id ??
+      health?.active_coordinator_node_id ??
+      health?.default_coordinator_node_id ??
+      null
+    );
+  }, [coordinatorNode?.id, health?.active_coordinator_node_id, health?.default_coordinator_node_id]);
+
+  const resolvedUserId = useMemo(() => {
+    return activeUser?.id ?? health?.active_user_id ?? null;
+  }, [activeUser?.id, health?.active_user_id]);
+
+  const { mutate: triggerStartSuperlink, isPending: startSuperlinkPending } = useMutation({
     mutationFn: startSuperlink,
     onSuccess: async () => {
       toast.success("SuperLink started");
@@ -143,7 +169,7 @@ export default function ProjectControlPanelPage() {
     },
   });
 
-  const stopSuperlinkMutation = useMutation({
+  const { mutate: triggerStopSuperlink, isPending: stopSuperlinkPending } = useMutation({
     mutationFn: stopSuperlink,
     onSuccess: async () => {
       toast.success("SuperLink stopped");
@@ -158,7 +184,7 @@ export default function ProjectControlPanelPage() {
     },
   });
 
-  const startRunMutation = useMutation({
+  const { mutate: triggerStartRun, isPending: startRunPending } = useMutation({
     mutationFn: startRun,
     onSuccess: async () => {
       toast.success("Federated run started");
@@ -174,7 +200,7 @@ export default function ProjectControlPanelPage() {
     },
   });
 
-  const stopRunMutation = useMutation({
+  const { mutate: triggerStopRun, isPending: stopRunPending } = useMutation({
     mutationFn: stopRun,
     onSuccess: async () => {
       toast.success("Federated run stopped");
@@ -199,7 +225,43 @@ export default function ProjectControlPanelPage() {
   const superlinkStartedAtText = formatTimestamp(health?.superlink_started_at);
   const runStartedAtText = formatTimestamp(dashboard?.activeRun?.started_at);
 
-  const canStartRun = !runActive && superlinkRunning;
+  const canStartRun = !runActive && superlinkRunning && Boolean(resolvedProjectId && resolvedCoordinatorNodeId);
+  const canStartSuperlink = Boolean(resolvedProjectId && resolvedCoordinatorNodeId);
+
+  const handleStartSuperlink = useCallback(
+    (payload: SuperlinkStartPayload) => {
+      if (!resolvedProjectId || !resolvedCoordinatorNodeId) {
+        toast.error("Coordinator metadata is not available yet.");
+        return;
+      }
+
+      triggerStartSuperlink({
+        ...payload,
+        project_id: payload.project_id ?? resolvedProjectId,
+        node_id: payload.node_id ?? resolvedCoordinatorNodeId,
+        user_id: payload.user_id ?? resolvedUserId ?? undefined,
+      });
+    },
+    [resolvedProjectId, resolvedCoordinatorNodeId, resolvedUserId, triggerStartSuperlink]
+  );
+
+  const handleStartRun = useCallback(
+    (payload: RunStartPayload) => {
+      if (!resolvedProjectId || !resolvedCoordinatorNodeId) {
+        toast.error("Coordinator metadata is not available yet.");
+        return;
+      }
+
+      triggerStartRun({
+        ...payload,
+        project_id: payload.project_id ?? resolvedProjectId,
+        coordinator_node_id:
+          payload.coordinator_node_id ?? resolvedCoordinatorNodeId,
+        user_id: payload.user_id ?? resolvedUserId ?? undefined,
+      });
+    },
+    [resolvedProjectId, resolvedCoordinatorNodeId, resolvedUserId, triggerStartRun]
+  );
 
   if (!projectId) {
     return (
@@ -324,18 +386,19 @@ export default function ProjectControlPanelPage() {
       <div className="grid gap-4 lg:grid-cols-5">
         <SuperlinkControls
           superlinkRunning={superlinkRunning}
-          isStarting={startSuperlinkMutation.isPending}
-          isStopping={stopSuperlinkMutation.isPending}
-          onStart={(payload: SuperlinkStartPayload) => startSuperlinkMutation.mutate(payload)}
-          onStop={() => stopSuperlinkMutation.mutate()}
+          isStarting={startSuperlinkPending}
+          isStopping={stopSuperlinkPending}
+          canStart={canStartSuperlink}
+          onStart={handleStartSuperlink}
+          onStop={() => triggerStopSuperlink()}
         />
         <RunControls
           canStart={canStartRun}
           runActive={runActive}
-          isStarting={startRunMutation.isPending}
-          isStopping={stopRunMutation.isPending}
-          onStart={(payload: RunStartPayload) => startRunMutation.mutate(payload)}
-          onStop={() => stopRunMutation.mutate()}
+          isStarting={startRunPending}
+          isStopping={stopRunPending}
+          onStart={handleStartRun}
+          onStop={() => triggerStopRun()}
         />
       </div>
 

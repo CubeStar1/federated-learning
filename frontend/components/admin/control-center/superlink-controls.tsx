@@ -15,6 +15,7 @@ interface SuperlinkControlsProps {
   superlinkRunning: boolean;
   isStarting: boolean;
   isStopping: boolean;
+  canStart?: boolean;
   onStart: (payload: SuperlinkStartPayload) => void;
   onStop: () => void;
 }
@@ -23,6 +24,7 @@ export default function SuperlinkControls({
   superlinkRunning,
   isStarting,
   isStopping,
+  canStart = true,
   onStart,
   onStop,
 }: SuperlinkControlsProps) {
@@ -35,6 +37,8 @@ export default function SuperlinkControls({
     ? "Stopping…"
     : superlinkRunning
     ? "Running"
+    : !canStart
+    ? "Awaiting coordinator"
     : "Standby";
 
   const statusTone = cn(
@@ -121,7 +125,7 @@ export default function SuperlinkControls({
           <Button
             className="flex-1"
             onClick={handleStart}
-            disabled={superlinkRunning || isStarting}
+            disabled={superlinkRunning || isStarting || !canStart}
           >
             {isStarting ? "Starting…" : "Start SuperLink"}
           </Button>

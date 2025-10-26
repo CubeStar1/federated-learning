@@ -12,6 +12,7 @@ export interface Project {
   name: string;
   description: string | null;
   config: Json | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,7 @@ export type NodeRole = "coordinator" | "participant" | string;
 export interface Node {
   id: string;
   project_id: string;
+  user_id: string | null;
   external_id: string;
   role: NodeRole;
   display_name: string | null;
@@ -59,7 +61,11 @@ export interface AdminHealthResponse {
   run_active: boolean;
   superlink_started_at: string | null;
   run_info: RunInfo | null;
-  project_id: string | null;
+  default_project_id: string | null;
+  active_project_id: string | null;
+  default_coordinator_node_id: string | null;
+  active_coordinator_node_id: string | null;
+  active_user_id: string | null;
 }
 
 export interface RunInfo {
@@ -71,6 +77,9 @@ export interface RunInfo {
 }
 
 export interface SuperlinkStartPayload {
+  project_id?: string;
+  node_id?: string;
+  user_id?: string;
   insecure?: boolean;
   certificates_path?: string | null;
   listen_address?: string | null;
@@ -83,9 +92,14 @@ export interface ClientHealthResponse {
   log_path: string | null;
   session_id: string | null;
   project_id: string | null;
+  node_id?: string | null;
+  user_id?: string | null;
 }
 
 export interface SupernodeStartPayload {
+  project_id?: string;
+  node_id?: string;
+  user_id?: string;
   superlink_address: string;
   partition_id: number;
   num_partitions: number;
@@ -96,9 +110,36 @@ export interface SupernodeStartPayload {
 }
 
 export interface RunStartPayload {
+  project_id?: string;
+  coordinator_node_id?: string;
+  user_id?: string;
   federation_name?: string;
   stream?: boolean;
   extra_args?: string[];
+}
+
+export interface CreateProjectPayload {
+  name: string;
+  slug?: string;
+  description?: string;
+  coordinator_display_name?: string;
+  coordinator_external_id?: string;
+}
+
+export interface CreateProjectResponse {
+  project: Project;
+  coordinator_node: Node;
+}
+
+export interface JoinProjectPayload {
+  display_name?: string;
+  external_id?: string;
+}
+
+export interface JoinProjectResponse {
+  project: Project;
+  node: Node;
+  already_registered: boolean;
 }
 
 export interface NodeWithSessions {

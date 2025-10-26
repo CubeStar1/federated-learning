@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Activity, ArrowRight, Plug } from "lucide-react";
+import { toast } from "sonner";
 
 import ClientProjectsEmpty from "@/components/client/projects/client-projects-empty";
 import ClientProjectsGrid from "@/components/client/projects/client-projects-grid";
@@ -13,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardSurface } from "@/components/ui/dashboard-surface";
 import { fetchClientHealth } from "@/lib/fetchers/client";
-import { fetchProjects } from "@/lib/fetchers/projects";
+import { fetchClientProjects, joinClientProject } from "@/lib/fetchers/projects";
+import { JoinProjectResponse } from "@/lib/fetchers/types";
 
 const formatTimestamp = (value?: string | null) => {
   if (!value) return null;
@@ -25,6 +28,7 @@ const formatTimestamp = (value?: string | null) => {
 };
 
 export default function ClientHomePage() {
+  const router = useRouter();
   const {
     data: health,
     isLoading: healthLoading,
@@ -39,9 +43,34 @@ export default function ClientHomePage() {
     isLoading: projectsLoading,
   } = useQuery({
     queryKey: ["client", "projects"],
-    queryFn: fetchProjects,
+    queryFn: fetchClientProjects,
     refetchInterval: 20000,
   });
+
+  const joinProjectMutation = useMutation<JoinProjectResponse, Error, string>({
+    mutationFn: (projectId: string) => joinClientProject(projectId),
+    onSuccess: ({ project, already_registered }) => {
+      toast.success(
+        already_registered
+          ? "You are already enrolled in this federation."
+          : "Participant node registered."
+      );
+      router.push(`/client/${project.id}`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to join project");
+    },
+  });
+
+  const joiningProjectId = joinProjectMutation.isPending
+    ? joinProjectMutation.variables ?? null
+    : null;
+
+  const handleJoinProject = (projectId: string) => {
+    if (!joinProjectMutation.isPending) {
+      joinProjectMutation.mutate(projectId);
+    }
+  };
 
   const supernodeRunning = health?.supernode_running ?? false;
   const startedAtText = formatTimestamp(health?.started_at ?? null);
@@ -143,7 +172,11 @@ export default function ClientHomePage() {
         {projectsLoading ? (
           <ClientProjectsSkeleton count={3} />
         ) : projects && projects.length > 0 ? (
-          <ClientProjectsGrid projects={projects} />
+          <ClientProjectsGrid
+            projects={projects}
+            onJoin={handleJoinProject}
+            joiningProjectId={joiningProjectId}
+          />
         ) : (
           <ClientProjectsEmpty />
         )}

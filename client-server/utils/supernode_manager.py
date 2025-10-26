@@ -28,10 +28,25 @@ class SupernodeManager:
         self.session_id: Optional[str] = None
         self.started_at: Optional[datetime] = None
 
-        self.project_id: Optional[str] = None
-        self.node_id: Optional[str] = None
+        self.default_project_id: Optional[str] = None
+        self.default_node_id: Optional[str] = None
+        self.active_project_id: Optional[str] = None
+        self.active_node_id: Optional[str] = None
+        self.active_user_id: Optional[str] = None
         self.initialized: bool = False
         self.session_logs: dict[str, str] = {}
+
+    @property
+    def project_id(self) -> Optional[str]:
+        return self.active_project_id or self.default_project_id
+
+    @property
+    def node_id(self) -> Optional[str]:
+        return self.active_node_id or self.default_node_id
+
+    @property
+    def user_id(self) -> Optional[str]:
+        return self.active_user_id
 
     async def initialize(self) -> None:
         if self.initialized:
@@ -41,36 +56,17 @@ class SupernodeManager:
             return
 
         project = await self.supabase.fetch_one("projects", {"slug": self.settings.project_slug})
-        if not project:
-            project = await self.supabase.insert(
-                "projects",
-                {
-                    "slug": self.settings.project_slug,
-                    "name": self.settings.project_name,
-                },
-            )
-            if not project:
-                project = await self.supabase.fetch_one("projects", {"slug": self.settings.project_slug})
         if project:
-            self.project_id = project["id"]
-            os.environ.setdefault("PROJECT_ID", self.project_id)
+            self.default_project_id = project["id"]
+            os.environ.setdefault("PROJECT_ID", self.default_project_id)
             os.environ.setdefault("PROJECT_SLUG", self.settings.project_slug)
 
-        node = await self.supabase.fetch_one("nodes", {"external_id": self.settings.participant_external_id})
-        if not node and self.project_id:
-            node = await self.supabase.insert(
+            node = await self.supabase.fetch_one(
                 "nodes",
-                {
-                    "project_id": self.project_id,
-                    "external_id": self.settings.participant_external_id,
-                    "role": "participant",
-                    "display_name": self.settings.participant_display_name,
-                },
+                {"external_id": self.settings.participant_external_id},
             )
-            if not node:
-                node = await self.supabase.fetch_one("nodes", {"external_id": self.settings.participant_external_id})
-        if node:
-            self.node_id = node["id"]
+            if node and node.get("project_id") == self.default_project_id:
+                self.default_node_id = node["id"]
 
         self.initialized = True
 
@@ -81,7 +77,24 @@ class SupernodeManager:
         if not FLOWER_APP_PATH.exists():
             raise HTTPException(status_code=500, detail="Configured flower-app path not found")
 
+        project_id = request.project_id or self.active_project_id or self.default_project_id
+        if not project_id:
+            raise HTTPException(status_code=400, detail="project_id is required")
+
+        node_id = request.node_id or self.active_node_id or self.default_node_id
+        if not node_id:
+            raise HTTPException(status_code=400, detail="node_id is required")
+
+        user_id = request.user_id or self.active_user_id
+
+        self.active_project_id = project_id
+        self.active_node_id = node_id
+        if request.user_id:
+            self.active_user_id = request.user_id
+
         node_config = f"partition-id={request.partition_id} num-partitions={request.num_partitions}"
+
+        self.session_id = None
         cmd = [
             "flower-supernode",
             "--superlink",
@@ -98,11 +111,11 @@ class SupernodeManager:
             cmd.extend(["--root-certificates", request.certificates_path])
 
         session_id: Optional[str] = None
-        if self.supabase.enabled and self.node_id:
+        if self.supabase.enabled:
             session = await self.supabase.insert(
                 "node_sessions",
                 {
-                    "node_id": self.node_id,
+                    "node_id": node_id,
                     "status": "starting",
                     "runtime_config": {
                         "superlink_address": request.superlink_address,
@@ -110,6 +123,9 @@ class SupernodeManager:
                         "partition_id": request.partition_id,
                         "num_partitions": request.num_partitions,
                         "node_config": node_config,
+                        "project_id": project_id,
+                        "node_id": node_id,
+                        **({"user_id": user_id} if user_id else {}),
                     },
                     "log_stream": "",
                 },
@@ -119,22 +135,12 @@ class SupernodeManager:
                 self.session_id = session_id
                 self.session_logs[session_id] = ""
 
-        env_overrides: dict[str, str] = {
-            "NODE_ROLE": "participant",
-            "PARTITION_ID": str(request.partition_id),
-            "NUM_PARTITIONS": str(request.num_partitions),
-            "NODE_EXTERNAL_ID": self.settings.participant_external_id,
-        }
-        if session_id:
-            env_overrides["NODE_SESSION_ID"] = session_id
-            env_overrides["FLWR_NODE_SESSION_ID"] = session_id
-
         process = await asyncio.create_subprocess_exec(
             *cmd,
             cwd=str(FLOWER_APP_PATH),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            env=self._build_env(env_overrides),
+            env=self._build_env(),
         )
 
         if process.stdout is None or process.stderr is None:
@@ -211,6 +217,10 @@ class SupernodeManager:
         self.monitor = None
         self.started_at = None
         self.session_id = None
+
+        self.active_project_id = None
+        self.active_node_id = None
+        self.active_user_id = None
         return {"status": "stopped"}
 
     async def _monitor_process(
@@ -242,6 +252,9 @@ class SupernodeManager:
         self.monitor = None
         self.started_at = None
         self.session_id = None
+        self.active_project_id = None
+        self.active_node_id = None
+        self.active_user_id = None
 
     async def _stream_to_file(
         self,
@@ -295,8 +308,6 @@ class SupernodeManager:
         env.setdefault("PYTHONIOENCODING", "utf-8")
         env.setdefault("LC_ALL", "C.UTF-8")
         env.setdefault("LANG", "C.UTF-8")
-        if self.project_id:
-            env.setdefault("PROJECT_ID", self.project_id)
         env.setdefault("PROJECT_SLUG", self.settings.project_slug)
         env.setdefault("NODE_EXTERNAL_ID", self.settings.participant_external_id)
         if self.settings.supabase_url:

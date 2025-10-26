@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { getUser } from "@/hooks/get-user";
 import supabaseAdmin from "@/lib/supabase/admin";
@@ -10,7 +10,7 @@ interface Params {
   };
 }
 
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(_: Request, { params }: Params) {
   const { projectId } = params;
   if (!projectId) {
     return NextResponse.json({ error: "Project id is required" }, { status: 400 });
@@ -27,7 +27,6 @@ export async function GET(request: NextRequest, { params }: Params) {
     const { data: projectData, error: projectError } = await supabase
       .from("projects")
       .select("*")
-      .eq("created_by", user.id)
       .eq("id", projectId)
       .maybeSingle();
 
@@ -71,9 +70,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       if (!latest) {
         return run;
       }
-      const latestTime = latest.started_at
-        ? new Date(latest.started_at).getTime()
-        : 0;
+      const latestTime = latest.started_at ? new Date(latest.started_at).getTime() : 0;
       const runTime = run.started_at ? new Date(run.started_at).getTime() : 0;
       return runTime > latestTime ? run : latest;
     }, null);
@@ -89,8 +86,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       },
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unexpected server error";
+    const message = error instanceof Error ? error.message : "Unexpected server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -16,7 +16,7 @@ export default function ProjectsEmpty({ message }: ProjectsEmptyProps) {
         <div className="space-y-1">
           <p className="text-lg font-semibold">No projects found</p>
           <p className="text-sm text-muted-foreground">
-            {message ?? "Create a project in Supabase or via the CLI to see it listed here."}
+            {message ?? "Use the project creator above to register your first coordinator."}
           </p>
         </div>
         <Button asChild variant="secondary" size="sm">

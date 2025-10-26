@@ -1,5 +1,15 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+CREATE TABLE users (
+	id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+	role TEXT NOT NULL CHECK (role IN ('admin', 'client')),
+	email TEXT,
+	display_name TEXT,
+	metadata JSONB DEFAULT '{}'::JSONB,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Projects represent a single federated deployment (one per coordinator)
 CREATE TABLE projects (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -7,6 +17,7 @@ CREATE TABLE projects (
 	name TEXT NOT NULL,
 	description TEXT,
 	config JSONB DEFAULT '{}'::JSONB,
+	created_by UUID REFERENCES users(id) ON DELETE SET NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
 	updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -15,6 +26,7 @@ CREATE TABLE projects (
 CREATE TABLE nodes (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+	user_id UUID REFERENCES users(id) ON DELETE SET NULL,
 	external_id TEXT UNIQUE NOT NULL,
 	role TEXT NOT NULL CHECK (role IN ('coordinator', 'participant')),
 	display_name TEXT,
@@ -53,8 +65,11 @@ ALTER PUBLICATION supabase_realtime ADD TABLE projects;
 ALTER PUBLICATION supabase_realtime ADD TABLE nodes;
 ALTER PUBLICATION supabase_realtime ADD TABLE node_sessions;
 ALTER PUBLICATION supabase_realtime ADD TABLE federated_runs;
+ALTER PUBLICATION supabase_realtime ADD TABLE users;
 
 CREATE INDEX idx_nodes_project_role ON nodes(project_id, role);
+CREATE INDEX idx_nodes_user ON nodes(user_id);
+CREATE INDEX idx_projects_created_by ON projects(created_by);
 CREATE INDEX idx_sessions_node ON node_sessions(node_id);
 CREATE INDEX idx_sessions_status ON node_sessions(status);
 CREATE INDEX idx_runs_project_status ON federated_runs(project_id, status);

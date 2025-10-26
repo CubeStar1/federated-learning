@@ -20,6 +20,9 @@ interface SupernodeControlsProps {
   isStopping: boolean;
   onStart: (payload: SupernodeStartPayload) => void;
   onStop: () => void;
+  projectId?: string | null;
+  nodeId?: string | null;
+  userId?: string | null;
 }
 
 type SupernodeFormValues = {
@@ -47,6 +50,9 @@ export default function SupernodeControls({
   isStopping,
   onStart,
   onStop,
+  projectId,
+  nodeId,
+  userId,
 }: SupernodeControlsProps) {
   const form = useForm<SupernodeFormValues>({
     defaultValues: {
@@ -64,6 +70,9 @@ export default function SupernodeControls({
 
   const handleSubmit = (values: SupernodeFormValues) => {
     onStart({
+      project_id: projectId ?? undefined,
+      node_id: nodeId ?? undefined,
+      user_id: userId ?? undefined,
       superlink_address: values.superlink_address.trim(),
       partition_id: Number(values.partition_id),
       num_partitions: Number(values.num_partitions),

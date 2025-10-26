@@ -42,8 +42,12 @@ class ProcessManager:
         self.run_id: Optional[str] = None
         self.pyproject_path: Path = FLOWER_APP_PATH / "pyproject.toml"
 
-        self.project_id: Optional[str] = None
-        self.coordinator_node_id: Optional[str] = None
+        self.default_project_id: Optional[str] = None
+        self.default_coordinator_node_id: Optional[str] = None
+        self.active_project_id: Optional[str] = None
+        self.active_coordinator_node_id: Optional[str] = None
+        self.active_user_id: Optional[str] = None
+
         self.initialized: bool = False
         self.session_logs: dict[str, str] = {}
         self.run_logs: dict[str, str] = {}
@@ -56,34 +60,15 @@ class ProcessManager:
             return
 
         project = await self.supabase.fetch_one("projects", {"slug": self.settings.project_slug})
-        if not project:
-            project = await self.supabase.insert(
-                "projects",
-                {
-                    "slug": self.settings.project_slug,
-                    "name": self.settings.project_name,
-                },
-            )
-            if not project:
-                project = await self.supabase.fetch_one("projects", {"slug": self.settings.project_slug})
         if project:
-            self.project_id = project["id"]
+            self.default_project_id = project["id"]
 
-        node = await self.supabase.fetch_one("nodes", {"external_id": self.settings.coordinator_external_id})
-        if not node and self.project_id:
-            node = await self.supabase.insert(
+            node = await self.supabase.fetch_one(
                 "nodes",
-                {
-                    "project_id": self.project_id,
-                    "external_id": self.settings.coordinator_external_id,
-                    "role": "coordinator",
-                    "display_name": self.settings.coordinator_display_name,
-                },
+                {"external_id": self.settings.coordinator_external_id},
             )
-            if not node:
-                node = await self.supabase.fetch_one("nodes", {"external_id": self.settings.coordinator_external_id})
-        if node:
-            self.coordinator_node_id = node["id"]
+            if node and node.get("project_id") == self.default_project_id:
+                self.default_coordinator_node_id = node["id"]
 
         self.initialized = True
 
@@ -96,6 +81,20 @@ class ProcessManager:
 
         log_path = DEFAULT_SUPERLINK_LOG
 
+        project_id = request.project_id or self.default_project_id
+        if not project_id:
+            raise HTTPException(status_code=400, detail="project_id is required")
+
+        coordinator_node_id = request.node_id or self.default_coordinator_node_id
+        if not coordinator_node_id:
+            raise HTTPException(status_code=400, detail="node_id is required")
+
+        user_id = request.user_id
+
+        self.active_project_id = project_id
+        self.active_coordinator_node_id = coordinator_node_id
+        self.active_user_id = user_id
+
         cmd = ["flower-superlink", *request.extra_args]
         if request.insecure:
             cmd.append("--insecure")
@@ -103,14 +102,20 @@ class ProcessManager:
             cmd.extend(["--certificates", request.certificates_path])
 
         session_id: Optional[str] = None
-        if self.supabase.enabled and self.coordinator_node_id:
-            runtime_config: dict[str, Any] = {"command": " ".join(cmd)}
+        if self.supabase.enabled:
+            runtime_config: dict[str, Any] = {
+                "command": " ".join(cmd),
+                "project_id": project_id,
+                "node_id": coordinator_node_id,
+            }
+            if user_id:
+                runtime_config["user_id"] = user_id
             if request.listen_address:
                 runtime_config["address"] = request.listen_address
             session = await self.supabase.insert(
                 "node_sessions",
                 {
-                    "node_id": self.coordinator_node_id,
+                    "node_id": coordinator_node_id,
                     "status": "starting",
                     "runtime_config": runtime_config,
                     "log_stream": "",
@@ -121,7 +126,13 @@ class ProcessManager:
                 self.superlink_session_id = session_id
                 self.session_logs[session_id] = ""
 
-        env = self._build_env()
+        env_extra: dict[str, str] = {
+            "PROJECT_ID": str(project_id),
+            "NODE_ID": str(coordinator_node_id),
+        }
+        if user_id:
+            env_extra["USER_ID"] = str(user_id)
+        env = self._build_env(env_extra)
 
         process = await asyncio.create_subprocess_exec(
             *cmd,
@@ -206,6 +217,9 @@ class ProcessManager:
         self.superlink_monitor = None
         self.superlink_started_at = None
         self.superlink_session_id = None
+        self.active_project_id = None
+        self.active_coordinator_node_id = None
+        self.active_user_id = None
         return {"status": "stopped"}
 
     async def start_run(self, request: RunStartRequest) -> dict[str, str]:
@@ -217,38 +231,43 @@ class ProcessManager:
         if not FLOWER_APP_PATH.exists():
             raise HTTPException(status_code=500, detail="Configured flower-app path not found")
 
+        project_id = request.project_id or self.active_project_id or self.default_project_id
+        if not project_id:
+            raise HTTPException(status_code=400, detail="project_id is required")
+
+        coordinator_node_id = (
+            request.coordinator_node_id or self.active_coordinator_node_id or self.default_coordinator_node_id
+        )
+        if not coordinator_node_id:
+            raise HTTPException(status_code=400, detail="coordinator_node_id is required")
+
+        user_id = request.user_id or self.active_user_id
+
+        self.active_project_id = project_id
+        self.active_coordinator_node_id = coordinator_node_id
+        if request.user_id:
+            self.active_user_id = request.user_id
+
         cmd = ["flwr", "run", ".", request.federation_name, *request.extra_args]
         if request.stream:
             cmd.append("--stream")
 
         session_id: Optional[str] = None
-        # if self.supabase.enabled and self.coordinator_node_id:
-        #     session = await self.supabase.insert(
-        #         "node_sessions",
-        #         {
-        #             "node_id": self.coordinator_node_id,
-        #             "status": "starting",
-        #             "runtime_config": {
-        #                 "federation_name": request.federation_name,
-        #                 "extra_args": request.extra_args,
-        #             },
-        #             "log_stream": "",
-        #         },
-        #     )
-        #     if session:
-        #         session_id = session["id"]
-        #         self.run_session_id = session_id
-        #         self.session_logs[session_id] = ""
 
         run_id: Optional[str] = None
-        if self.supabase.enabled and self.project_id:
+        if self.supabase.enabled:
             run = await self.supabase.insert(
                 "federated_runs",
                 {
-                    "project_id": self.project_id,
+                    "project_id": project_id,
                     "status": "starting",
                     "label": request.federation_name,
-                    "config": {"federation_name": request.federation_name, "stream": request.stream},
+                    "config": {
+                        "federation_name": request.federation_name,
+                        "stream": request.stream,
+                        "project_id": project_id,
+                        "coordinator_node_id": coordinator_node_id,
+                    },
                     "log_stream": "",
                     "metrics": {},
                 },
@@ -260,12 +279,22 @@ class ProcessManager:
 
         self._set_pyproject_run_id(run_id)
 
+        env_overrides: dict[str, str] = {
+            "PROJECT_ID": str(project_id),
+            "NODE_ID": str(coordinator_node_id),
+            "COORDINATOR_NODE_ID": str(coordinator_node_id),
+        }
+        if user_id:
+            env_overrides["USER_ID"] = str(user_id)
+        if request.federation_name:
+            env_overrides["FEDERATION_NAME"] = request.federation_name
+
         process = await asyncio.create_subprocess_exec(
             *cmd,
             cwd=str(FLOWER_APP_PATH),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            env=self._build_env(),
+            env=self._build_env(env_overrides),
         )
 
         if process.stdout is None or process.stderr is None:
@@ -280,6 +309,9 @@ class ProcessManager:
             "pid": str(process.pid),
             "log_path": str(self.run_log),
             "run_id": run_id or "",
+            "project_id": project_id,
+            "coordinator_node_id": coordinator_node_id,
+            "user_id": user_id or "",
         }
 
         # if session_id and self.supabase.enabled:
@@ -421,6 +453,9 @@ class ProcessManager:
             self.superlink_monitor = None
             self.superlink_started_at = None
             self.superlink_session_id = None
+            self.active_project_id = None
+            self.active_coordinator_node_id = None
+            self.active_user_id = None
 
     async def _stream_to_file(
         self,

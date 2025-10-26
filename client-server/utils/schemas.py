@@ -7,6 +7,9 @@ from pydantic import BaseModel, Field
 
 
 class SupernodeStartRequest(BaseModel):
+    project_id: Optional[str] = None
+    node_id: Optional[str] = None
+    user_id: Optional[str] = None
     superlink_address: str
     partition_id: int
     num_partitions: int

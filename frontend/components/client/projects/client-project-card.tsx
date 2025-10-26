@@ -12,6 +12,8 @@ import { ProjectSummary } from "@/lib/fetchers/types";
 
 interface ClientProjectCardProps {
   summary: ProjectSummary;
+  onJoin?: () => void;
+  isJoining?: boolean;
 }
 
 const formatTimestamp = (value?: string | null) => {
@@ -23,7 +25,7 @@ const formatTimestamp = (value?: string | null) => {
   }
 };
 
-export default function ClientProjectCard({ summary }: ClientProjectCardProps) {
+export default function ClientProjectCard({ summary, onJoin, isJoining }: ClientProjectCardProps) {
   const { project, activeRunCount, latestRun, participantCount } = summary;
 
   const activeBadgeLabel = activeRunCount > 0 ? `${activeRunCount} active` : "Idle";
@@ -77,12 +79,24 @@ export default function ClientProjectCard({ summary }: ClientProjectCardProps) {
           <span className="font-medium text-foreground">Created</span>
           <span>{formatTimestamp(project.created_at) ?? "unknown"}</span>
         </div>
-        <Button asChild size="sm" className="gap-2">
-          <Link href={`/client/${project.id}`}>
-            Open client space
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {onJoin ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onJoin}
+              disabled={Boolean(isJoining)}
+            >
+              {isJoining ? "Joining..." : "Join Project"}
+            </Button>
+          ) : null}
+          <Button asChild size="sm" className="gap-2">
+            <Link href={`/client/${project.id}`}>
+              Open client space
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </CardFooter>
     </ClientCard>
   );

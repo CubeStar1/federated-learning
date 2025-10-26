@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import ParticipantRoster from "@/components/client/session/participant-roster";
 import SessionTelemetry from "@/components/client/session/session-telemetry";
 import SupernodeControls from "@/components/client/session/supernode-controls";
+import useUser from "@/hooks/use-user";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DashboardSurface } from "@/components/ui/dashboard-surface";
 import { cn } from "@/lib/utils";
 import { fetchClientHealth, startSupernode, stopSupernode } from "@/lib/fetchers/client";
-import { fetchDashboardData, fetchProject } from "@/lib/fetchers/projects";
+import { fetchClientDashboardData, fetchClientProject } from "@/lib/fetchers/projects";
 import { ClientHealthResponse, DashboardData, Node, NodeSession, SupernodeStartPayload } from "@/lib/fetchers/types";
 
 const formatTimestamp = (value?: string | null) => {
@@ -57,6 +58,7 @@ const getLatestSession = (sessions: NodeSession[], allowedNodeIds: Set<string>, 
 export default function ClientProjectPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const queryClient = useQueryClient();
+  const { data: supabaseUser } = useUser();
 
   const {
     data: project,
@@ -64,7 +66,7 @@ export default function ClientProjectPage() {
     isLoading: projectLoading,
   } = useQuery({
     queryKey: ["client", "projects", projectId, "detail"],
-    queryFn: () => fetchProject(projectId),
+    queryFn: () => fetchClientProject(projectId),
     enabled: Boolean(projectId),
     staleTime: 60000,
   });
@@ -85,7 +87,7 @@ export default function ClientProjectPage() {
     refetch: refetchDashboard,
   } = useQuery<DashboardData>({
     queryKey: ["client", "dashboard", projectId],
-    queryFn: () => fetchDashboardData(projectId as string),
+    queryFn: () => fetchClientDashboardData(projectId as string),
     enabled: Boolean(projectId),
     refetchInterval: 7000,
   });
@@ -150,6 +152,31 @@ export default function ClientProjectPage() {
   const run = dashboard?.activeRun ?? null;
   const metrics = run?.metrics ?? null;
   const startedAt = formatTimestamp(health?.started_at ?? null);
+  const resolvedProjectId = projectId ?? null;
+
+  const resolvedUserId = supabaseUser?.id ?? null;
+
+  const resolvedNodeId = useMemo(() => {
+    if (!resolvedUserId) {
+      return null;
+    }
+    const byUser = participantNodes.find((node) => node.user_id === resolvedUserId);
+    return byUser ? byUser.id : null;
+  }, [participantNodes, resolvedUserId]);
+
+  const handleStartSupernode = (payload: SupernodeStartPayload) => {
+    if (!resolvedProjectId || !resolvedNodeId) {
+      toast.error("Join this project to start the SuperNode.");
+      return;
+    }
+
+    startSupernodeMutation.mutate({
+      ...payload,
+      project_id: resolvedProjectId,
+      node_id: resolvedNodeId,
+      user_id: resolvedUserId ?? undefined,
+    });
+  };
 
   if (!projectId) {
     return (
@@ -269,8 +296,11 @@ export default function ClientProjectPage() {
             supernodeRunning={supernodeRunning}
             isStarting={startSupernodeMutation.isPending}
             isStopping={stopSupernodeMutation.isPending}
-            onStart={(payload: SupernodeStartPayload) => startSupernodeMutation.mutate(payload)}
+            onStart={handleStartSupernode}
             onStop={() => stopSupernodeMutation.mutate()}
+            projectId={resolvedProjectId}
+            nodeId={resolvedNodeId}
+            userId={resolvedUserId}
           />
         </div>
         <div className="lg:col-span-2">

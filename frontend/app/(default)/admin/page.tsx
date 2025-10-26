@@ -34,7 +34,8 @@ export default function AdminHomePage() {
 
   const superlinkRunning = health?.superlink_running ?? false;
   const activeRun = health?.run_info;
-  const activeProjectId = health?.project_id ?? null;
+  const activeProjectId = health?.active_project_id ?? null;
+  const defaultProjectId = health?.default_project_id ?? null;
 
   return (
     <div className="space-y-10">
@@ -91,7 +92,11 @@ export default function AdminHomePage() {
                 <div className="flex items-center justify-between">
                   <span>Active project</span>
                   <span className="font-medium text-foreground">
-                    {activeProjectId ? activeProjectId : healthLoading ? "Loading…" : "None"}
+                    {activeProjectId
+                      ? activeProjectId
+                      : healthLoading
+                      ? "Loading…"
+                      : defaultProjectId ?? "None"}
                   </span>
                 </div>
                 {activeRun ? (
