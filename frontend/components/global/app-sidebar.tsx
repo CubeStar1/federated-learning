@@ -15,6 +15,7 @@ import useUser from "@/hooks/use-user"
 import { LucideProps, LucideIcon } from "lucide-react"
 import Icons from "@/components/global/icons"
 import defaultConfig from "@/lib/config/sidebar"
+import Image from "next/image"
 
 type NavItem = {
   title: string
@@ -55,10 +56,14 @@ export function AppSidebar({ config = defaultConfig, ...props }: AppSidebarProps
       <SidebarHeader>
         <div className="relative border-b border-border/10 px-6 py-5 backdrop-blur-xl">
           <Link href={config.brand?.href || "/"} className="relative flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 shadow-lg ring-2 ring-blue-500/20 dark:from-blue-500 dark:via-indigo-500 dark:to-violet-500">
-              {config.brand?.icon && (
-                <config.brand.icon className="h-5 w-5 text-white shadow-sm" />
-              )}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black dark:bg-white">
+              <Image
+                src="/logo/fed-ml-logo.png"
+                alt="Logo"
+                width={24}
+                height={24}
+                className="h-6 w-6"
+              />
             </div>
             <div className="flex flex-col gap-0.5">
               <h1 className="text-xl font-semibold tracking-tight text-foreground">

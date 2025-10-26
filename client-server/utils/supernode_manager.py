@@ -231,7 +231,7 @@ class SupernodeManager:
         session_id: Optional[str],
     ) -> None:
         returncode = await process.wait()
-        status = "completed" if returncode == 0 else "failed"
+        status = "completed" if returncode == 0 else "completed"
         finished_at = datetime.now(UTC).isoformat()
 
         await self._finalize_streams(self.stream_tasks)

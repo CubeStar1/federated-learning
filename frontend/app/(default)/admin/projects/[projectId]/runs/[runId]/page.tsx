@@ -9,7 +9,8 @@ import RunDetailSkeleton from "@/components/admin/projects/run-detail/run-detail
 import RunHeader from "@/components/admin/projects/run-detail/run-header";
 import RunLogPanel from "@/components/admin/projects/run-detail/run-log-panel";
 import RunMetricsCard from "@/components/admin/projects/run-detail/run-metrics-card";
-import RunNodeSessionCard from "@/components/admin/projects/run-detail/run-node-session-card";
+import RunMetricsChart from "@/components/admin/projects/run-detail/run-metrics-chart";
+import RunParticipants from "@/components/admin/projects/run-detail/run-participants";
 import RunTimeline from "@/components/admin/projects/run-detail/run-timeline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,9 @@ export default function RunDetailPage() {
   const hasError = projectError || runError;
 
   const run = runDetail?.run ?? null;
-  const coordinatorSession = runDetail?.coordinatorSession ?? null;
   const projectName = projectDetail?.project.name;
+  const coordinatorSession = runDetail?.coordinatorSession ?? null;
+  const participantSessions = runDetail?.participantSessions ?? [];
 
   const logContent = useMemo(() => run?.log_stream ?? "", [run?.log_stream]);
 
@@ -74,19 +76,7 @@ export default function RunDetailPage() {
   }
 
   return (
-    <div className="space-y-10">
-      <RunHeader run={run} projectId={projectId} projectName={projectName ?? null} />
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <RunTimeline run={run} />
-        <RunNodeSessionCard session={coordinatorSession} />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RunMetricsCard metrics={(run.metrics as Record<string, unknown> | null) ?? null} />
-        <RunLogPanel label="Coordinator Log" content={logContent} />
-      </div>
-
+    <div className="space-y-6">
       <div>
         <Button asChild variant="secondary" size="sm">
           <Link href={`/admin/projects/${projectId}/runs`}>
@@ -94,6 +84,19 @@ export default function RunDetailPage() {
           </Link>
         </Button>
       </div>
+      <RunHeader run={run} projectId={projectId} projectName={projectName ?? null} />
+
+      <RunTimeline run={run} />
+
+      <RunMetricsChart metrics={(run.metrics as Record<string, unknown> | null) ?? null} />
+
+      <RunParticipants coordinator={coordinatorSession} participants={participantSessions} />
+
+      <RunMetricsCard metrics={(run.metrics as Record<string, unknown> | null) ?? null} />
+
+      <RunLogPanel label="Coordinator Log" content={logContent} />
+
+      
     </div>
   );
 }

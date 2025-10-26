@@ -214,5 +214,12 @@ export interface ProjectRunsResponse {
 
 export interface RunDetailResponse {
   run: FederatedRun;
-  coordinatorSession: NodeSession | null;
+  coordinatorSession: {
+    session: NodeSession;
+    node: Node;
+  } | null;
+  participantSessions: Array<{
+    session: NodeSession;
+    node: Node;
+  }>;
 }

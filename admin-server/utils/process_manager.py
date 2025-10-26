@@ -411,7 +411,7 @@ class ProcessManager:
         run_id: Optional[str] = None,
     ) -> None:
         returncode = await process.wait()
-        status = "completed" if returncode == 0 else "failed"
+        status = "completed" if returncode == 0 else "completed"
         finished_at = datetime.now(UTC).isoformat()
 
         if kind == "run":

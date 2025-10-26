@@ -17,14 +17,16 @@ export default function RunLogPanel({ label, content }: RunLogPanelProps) {
 
   return (
     <GlassCard accent="emerald">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
           <ScrollText className="h-4 w-4 text-primary" />
           {label}
         </CardTitle>
       </CardHeader>
-      <CardContent className="rounded-2xl border border-primary/10 bg-background/70 p-3 shadow-inner dark:bg-white/5">
-        <LogViewer content={logContent} isLoading={false} emptyLabel="No log output captured." />
+      <CardContent>
+        <div className="rounded-lg border border-border/50 bg-background/50 p-3 shadow-inner">
+          <LogViewer content={logContent} isLoading={false} emptyLabel="No log output captured." />
+        </div>
       </CardContent>
     </GlassCard>
   );

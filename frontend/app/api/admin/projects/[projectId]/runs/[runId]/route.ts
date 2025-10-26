@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getUser } from "@/hooks/get-user";
 import supabaseAdmin from "@/lib/supabase/admin";
-import { FederatedRun, NodeSession } from "@/lib/fetchers/types";
+import { FederatedRun, Node, NodeSession } from "@/lib/fetchers/types";
 
 interface Params {
   params: {
@@ -60,22 +60,73 @@ export async function GET(_request: Request, { params }: Params) {
 
     const run = runData as FederatedRun;
 
-    let coordinatorSession: NodeSession | null = null;
-    if (run.coordinator_session_id) {
-      const { data: sessionData, error: sessionError } = await supabase
-        .from("node_sessions")
-        .select("*")
-        .eq("id", run.coordinator_session_id)
-        .maybeSingle();
+    const { data: nodesData, error: nodesError } = await supabase
+      .from("nodes")
+      .select("*")
+      .eq("project_id", projectId);
 
-      if (sessionError) {
-        return NextResponse.json({ error: sessionError.message }, { status: 500 });
-      }
-
-      coordinatorSession = (sessionData ?? null) as NodeSession | null;
+    if (nodesError) {
+      return NextResponse.json({ error: nodesError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ run, coordinatorSession });
+    const nodes = (nodesData ?? []) as Node[];
+    const coordinatorNode = nodes.find(n => n.role === "coordinator");
+    const participantNodes = nodes.filter(n => n.role === "participant");
+
+    const nodeIds = nodes.map(n => n.id);
+
+    if (nodeIds.length === 0) {
+      return NextResponse.json({ 
+        run, 
+        coordinatorSession: null,
+        participantSessions: [] 
+      });
+    }
+
+    const runStartTime = run.started_at;
+    const runEndTime = run.ended_at || new Date().toISOString();
+
+    const { data: sessionsData, error: sessionsError } = await supabase
+      .from("node_sessions")
+      .select("*")
+      .in("node_id", nodeIds)
+      .lte("started_at", runEndTime)
+      .order("started_at", { ascending: false });
+
+    if (sessionsError) {
+      return NextResponse.json({ error: sessionsError.message }, { status: 500 });
+    }
+
+    const sessions = (sessionsData ?? []) as NodeSession[];
+    
+    const relevantSessions = sessions.filter(session => {
+      const sessionStart = new Date(session.started_at || 0);
+      const sessionEnd = session.ended_at ? new Date(session.ended_at) : new Date();
+      const runStart = new Date(runStartTime || 0);
+      const runEnd = new Date(runEndTime);
+      
+      return sessionStart <= runEnd && sessionEnd >= runStart;
+    });
+
+    const coordinatorSession = coordinatorNode 
+      ? (() => {
+          const session = relevantSessions.find(s => s.node_id === coordinatorNode.id);
+          return session ? { session, node: coordinatorNode } : null;
+        })()
+      : null;
+
+    const participantSessions = participantNodes
+      .map(node => {
+        const session = relevantSessions.find(s => s.node_id === node.id);
+        return session ? { session, node } : null;
+      })
+      .filter((item): item is { session: NodeSession; node: Node } => item !== null);
+
+    return NextResponse.json({ 
+      run, 
+      coordinatorSession,
+      participantSessions 
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unexpected server error";
