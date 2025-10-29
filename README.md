@@ -170,3 +170,14 @@ npm run dev
 See the included architecture diagram for the full end-to-end flow. At a high level, Supabase stores metadata and telemetry, the admin server orchestrates training rounds via Flower SuperLink, client servers manage hospital SuperNodes, and frontend dashboards (Next.js) will surface health and metrics for both administrators and participants.
 
 ![Architecture Diagram](./docs/fedml-architecture.png)
+
+
+## Windows Speicifc Dependency issue
+
+- Flower has an issue with terminating processes on Windows systems, so you have to modify this file in flower library
+
+- In `venv\Lib\site-packages\flwr\supercore\app_utils.py`, modify line number 56 to this: 
+
+```python
+56                os.kill(os.getpid(), signal.SIGTERM)
+```

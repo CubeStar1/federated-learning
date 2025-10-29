@@ -38,6 +38,7 @@ penalty = "l2"
 local-epochs = 1
 
 # Default federation to use when running the app
+current-run-id = "26e2fece-6772-4296-b5fd-2e4c5d82e5c9"
 [tool.flwr.federations]
 default = "local-simulation"
 
