@@ -12,6 +12,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { usePathname } from "next/navigation"
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+
 
 type RouteConfig = {
   name: string
@@ -113,7 +115,7 @@ export function Breadcrumbs({
         </Breadcrumb>
         <div className="ml-auto flex items-center gap-4">
           {action}
-          <ModeToggle />
+          <AnimatedThemeToggler />
         </div>
       </div>
     </header>

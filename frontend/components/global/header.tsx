@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils"
 import { NavigationMobile } from "./header-mobile"
 import { motion, useAnimationControls, LayoutGroup } from "framer-motion"
 import { HeaderConfig } from "@/lib/config/header"
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+
 
 interface HeaderProps {
   config: HeaderConfig
@@ -126,7 +128,7 @@ export function Header({ config }: HeaderProps) {
                 <div className="md:hidden">
                   <NavigationMobile navigationLinks={config.navigationLinks} />
                 </div>
-                <ModeToggle />
+                <AnimatedThemeToggler />
               </div>
             </div>
           </div>

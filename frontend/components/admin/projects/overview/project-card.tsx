@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectSummary } from "@/lib/fetchers/types";
 
+
 interface ProjectCardProps {
   summary: ProjectSummary;
 }
@@ -89,7 +90,7 @@ export default function ProjectCard({ summary }: ProjectCardProps) {
           </p>
         </div>
       </CardContent>
-  <CardFooter className="mt-auto flex items-center justify-between gap-3 border-t border-primary/10 bg-primary/5 px-6 py-4 text-xs text-muted-foreground dark:bg-primary/10">
+      <CardFooter className="mt-auto flex items-center justify-between gap-3 border-t border-primary/10 bg-primary/5 px-6 py-4 text-xs text-muted-foreground dark:bg-primary/10">
         <div className="flex flex-col">
           <span className="font-medium text-foreground">Created</span>
           <span>{formatTimestamp(project.created_at) ?? "unknown"}</span>
