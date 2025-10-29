@@ -122,7 +122,7 @@ export default function RunMetricsChart({ metrics }: RunMetricsChartProps) {
       };
     }, {} as ChartConfig);
 
-    const aggregateStats = seriesMeta.length > 0 ? seriesMeta.slice(0, 3).map(({ key, label }) => {
+    const aggregateStats = seriesMeta.length > 0 ? seriesMeta.slice(1, 4).map(({ key, label }) => {
       const values = allValues[key] || [];
       const latest = values[values.length - 1];
       const previous = values[values.length - 2];
@@ -205,24 +205,25 @@ export default function RunMetricsChart({ metrics }: RunMetricsChartProps) {
       </CardHeader>
       <CardContent>
         <ChartContainer config={config} className="h-[400px] w-full">
-          <RechartsLineChart data={data} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+          <RechartsLineChart 
+            accessibilityLayer
+            data={data} 
+            margin={{ left: 12, right: 12 }}
+          >
+            <CartesianGrid vertical={false} />
             <XAxis 
               dataKey="round" 
               tickLine={false} 
               axisLine={false} 
               tickMargin={8}
-              className="text-xs"
             />
             <YAxis 
               tickLine={false} 
               axisLine={false} 
-              tickMargin={8} 
-              width={50}
-              className="text-xs"
+              tickMargin={8}
             />
             <ChartTooltip 
-              cursor={{ strokeDasharray: "4 4" }} 
+              cursor={false} 
               content={<ChartTooltipContent />} 
             />
             {seriesKeys.map((key) => (
@@ -231,10 +232,8 @@ export default function RunMetricsChart({ metrics }: RunMetricsChartProps) {
                 type="monotone"
                 dataKey={key}
                 stroke={`var(--color-${key})`}
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-                isAnimationActive={false}
+                strokeWidth={2}
+                dot={false}
               />
             ))}
             <ChartLegend className="pt-4" />

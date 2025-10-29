@@ -17,21 +17,21 @@ export default function Social({ redirectTo }: { redirectTo: string }) {
     });
   };
   return (
-    <div className="w-full flex gap-2">
+    <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
       <Button
-        className="w-full h-8 flex items-center gap-5"
+        className="flex-1 min-w-32 justify-center gap-2 h-10 sm:h-11"
         variant="outline"
         onClick={() => loginWithProvider("github")}
       >
-        <IoLogoGithub />
+        <IoLogoGithub className="h-4 w-4" />
         Github
       </Button>
       <Button
-        className="w-full h-8 flex items-center gap-2"
+        className="flex-1 min-w-32 justify-center gap-2 h-10 sm:h-11"
         variant="outline"
         onClick={() => loginWithProvider("google")}
       >
-        <FcGoogle />
+        <FcGoogle className="h-4 w-4" />
         Google
       </Button>
     </div>

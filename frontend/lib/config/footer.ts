@@ -20,25 +20,25 @@ export interface FooterConfig {
 export const footerConfig: FooterConfig = {
   brand: {
     title: "FedML",
-    description: "Federated Machine Learning"
+    description: "Privacy-Preserving Healthcare AI through Federated Learning"
   },
   sections: [
     {
-      title: "Product",
+      title: "Platform",
       links: [
-        { href: "#", label: "Browser Extension" },
-        { href: "#", label: "Admin Dashboard" },
-        { href: "#", label: "AI Detection" },
-        { href: "#", label: "Pricing Plans" }
+        { href: "/admin", label: "Admin Dashboard" },
+        { href: "/client", label: "Participant Dashboard" },
+        { href: "/about", label: "How It Works" },
+        { href: "/contact", label: "Get Started" }
       ]
     },
     {
       title: "Solutions",
       links: [
-        { href: "#", label: "Universities" },
-        { href: "#", label: "Schools" },
-        { href: "#", label: "Training Centers" },
-        { href: "#", label: "Enterprises" }
+        { href: "#", label: "Hospitals" },
+        { href: "#", label: "Research Institutions" },
+        { href: "#", label: "Medical Centers" },
+        { href: "#", label: "Healthcare Networks" }
       ]
     },
     {
@@ -46,8 +46,8 @@ export const footerConfig: FooterConfig = {
       links: [
         { href: "#", label: "Documentation" },
         { href: "#", label: "API Reference" },
-        { href: "#", label: "Help Center" },
-        { href: "#", label: "Security" }
+        { href: "#", label: "Security & Compliance" },
+        { href: "#", label: "Support" }
       ]
     },
     {
@@ -55,10 +55,10 @@ export const footerConfig: FooterConfig = {
       links: [
         { href: "#", label: "Privacy Policy" },
         { href: "#", label: "Terms of Service" },
-        { href: "#", label: "Cookie Policy" },
-        { href: "#", label: "GDPR" }
+        { href: "#", label: "HIPAA Compliance" },
+        { href: "#", label: "Data Protection" }
       ]
     }
   ],
-  copyright: `© ${new Date().getFullYear()} NextJS Template. All rights reserved.`
+  copyright: `© ${new Date().getFullYear()} FedML Healthcare. All rights reserved.`
 }

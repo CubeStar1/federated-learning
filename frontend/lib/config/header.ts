@@ -18,7 +18,7 @@ export interface HeaderConfig {
 export const headerConfig: HeaderConfig = {
   brand: {
     title: "FedML",
-    icon: "/globe.svg"
+    icon: "/logo/fed-ml-logo.png"
   },
   navigationLinks: [
     { 
@@ -30,20 +30,12 @@ export const headerConfig: HeaderConfig = {
     label: "About" 
   },
   { 
-    href: "/activity", 
-    label: "Activity" 
+    href: "/admin", 
+    label: "Admin" 
   },
   { 
-    href: "/files", 
-    label: "Files" 
+    href: "/client", 
+    label: "Participant" 
   },
-  { 
-    href: "/settings", 
-    label: "Settings" 
-  },
-  { 
-    href: "/contact", 
-    label: "Contact" 
-  }
   ]
 }

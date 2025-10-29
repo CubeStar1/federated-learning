@@ -7,6 +7,7 @@ import { SystemFlow } from "@/components/landing/system-flow"
 import { FeatureDetails } from "@/components/landing/feature-details"
 import { cn } from "@/lib/utils"
 import { GridPattern } from "@/components/ui/grid-pattern"
+import ColorBends from "@/components/ColorBends"
 
 export default function LandingPage() {
   return (
