@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# Node/Next.js
+node_modules/
+.next/
+*.log
+
+# VS Code
+.vscode/
+
+# Local logs and artifacts
+logs/
+frontend/.env*
+.env*
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db

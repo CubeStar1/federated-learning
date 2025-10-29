@@ -4,3 +4,4 @@ None
 __pycache__
 .venv
 logs
+docs

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Optional
 from fastapi import HTTPException
 
 from .config import Settings
-from .constants import ANSI_ESCAPE_RE, DEFAULT_SUPERNODE_LOG, FLOWER_APP_PATH
+from .constants import ANSI_ESCAPE_RE, DEFAULT_SUPERNODE_LOG, BASE_DIR
 from .supabase import SupabaseAsync
 
 if TYPE_CHECKING:
@@ -74,8 +74,9 @@ class SupernodeManager:
         await self.initialize()
         if self.process:
             raise HTTPException(status_code=400, detail="SuperNode already running")
-        if not FLOWER_APP_PATH.exists():
-            raise HTTPException(status_code=500, detail="Configured flower-app path not found")
+        # SuperNode does not require the flower-app working directory; run from repo base
+        if not BASE_DIR.exists():
+            raise HTTPException(status_code=500, detail="Configured base path not found")
 
         project_id = request.project_id or self.active_project_id or self.default_project_id
         if not project_id:
@@ -137,7 +138,7 @@ class SupernodeManager:
 
         process = await asyncio.create_subprocess_exec(
             *cmd,
-            cwd=str(FLOWER_APP_PATH),
+            cwd=str(BASE_DIR),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=self._build_env(),
