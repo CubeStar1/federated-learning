@@ -1,6 +1,8 @@
 import { adminRequest } from "./http";
 import {
   AdminHealthResponse,
+  CatalogResponse,
+  DatasetUploadResponse,
   RunStartPayload,
   RunStartResponse,
   StopResponse,
@@ -39,4 +41,18 @@ export const fetchActiveRun = async (): Promise<{ run: AdminHealthResponse["run_
   adminRequest<{ run: AdminHealthResponse["run_info"] }>({
     method: "GET",
     url: "/runs/active",
+  });
+
+export const fetchModelCatalog = async (): Promise<CatalogResponse> =>
+  adminRequest<CatalogResponse>({
+    method: "GET",
+    url: "/catalog",
+  });
+
+export const uploadDataset = async (formData: FormData): Promise<DatasetUploadResponse> =>
+  adminRequest<DatasetUploadResponse>({
+    method: "POST",
+    url: "/datasets/upload",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
   });

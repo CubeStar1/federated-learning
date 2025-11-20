@@ -246,6 +246,7 @@ export default function ProjectDetailPage() {
             </CardContent>
           </GlassCard>
           <ProjectQuickActions
+            projectId={project.id}
             projectName={projectName}
             canStart={canStart}
             runActive={runActive}

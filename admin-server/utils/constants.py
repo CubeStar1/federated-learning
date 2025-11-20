@@ -9,6 +9,8 @@ LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_SUPERLINK_LOG = LOG_DIR / "superlink.log"
 DEFAULT_RUN_LOG = LOG_DIR / "run.log"
+DATASETS_DIR = FLOWER_APP_PATH / "datasets"
+DATASETS_DIR.mkdir(parents=True, exist_ok=True)
 ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 __all__ = [
@@ -17,5 +19,6 @@ __all__ = [
     "DEFAULT_RUN_LOG",
     "DEFAULT_SUPERLINK_LOG",
     "FLOWER_APP_PATH",
+    "DATASETS_DIR",
     "LOG_DIR",
 ]

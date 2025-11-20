@@ -18,13 +18,24 @@ def main(grid: Grid, context: Context) -> None:
 
     # Read run config
     num_rounds: int = context.run_config["num-server-rounds"]
+    run_cfg = context.run_config
+    penalty = run_cfg.get("penalty", "l2")
+    local_epochs = run_cfg.get("local-epochs", 1)
+    task_name = run_cfg.get("task-name", "mnist-classification")
+    model_name = run_cfg.get("model-name", "logistic-regression")
+    num_classes = run_cfg.get("num-classes", 10)
+    height = run_cfg.get("input-height", 28)
+    width = run_cfg.get("input-width", 28)
+    channels = run_cfg.get("input-channels", 1)
+    num_features = run_cfg.get("num-features", height * width * channels)
 
-    # Create LogisticRegression Model
-    penalty = context.run_config["penalty"]
-    local_epochs = context.run_config["local-epochs"]
-    model = get_model(penalty, local_epochs)
+    model = get_model(
+        task_name,
+        model_name,
+        {"penalty": penalty, "max_iter": local_epochs},
+    )
     # Setting initial parameters, akin to model.compile for keras models
-    set_initial_params(model)
+    set_initial_params(model, num_classes, num_features)
     # Construct ArrayRecord representation
     arrays = ArrayRecord(get_model_params(model))
 

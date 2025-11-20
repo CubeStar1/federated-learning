@@ -2,6 +2,8 @@
 
 import warnings
 
+import numpy as np
+
 import flwr as fl
 from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
@@ -13,13 +15,7 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from flower_app.task import (
-    get_model,
-    get_model_params,
-    load_data,
-    set_initial_params,
-    set_model_params,
-)
+from flower_app.task import get_model, get_model_params, load_data, set_initial_params, set_model_params
 
 # Flower ClientApp
 app = ClientApp()
@@ -29,21 +25,43 @@ app = ClientApp()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
 
-    # Create LogisticRegression Model
-    penalty = context.run_config["penalty"]
-    local_epochs = context.run_config["local-epochs"]
-    model = get_model(penalty, local_epochs)
-    # Setting initial parameters, akin to model.compile for keras models
-    set_initial_params(model)
+    run_cfg = context.run_config
+    task_name = run_cfg.get("task-name", "mnist-classification")
+    model_name = run_cfg.get("model-name", "logistic-regression")
+    dataset_path = run_cfg.get("dataset-path")
+    local_epochs = run_cfg.get("local-epochs", 1)
+    penalty = run_cfg.get("penalty", "l2")
+    image_height = run_cfg.get("input-height", 28)
+    image_width = run_cfg.get("input-width", 28)
+    channels = run_cfg.get("input-channels", 1)
 
-    # Apply received pararameters
-    ndarrays = msg.content["arrays"].to_numpy_ndarrays()
-    set_model_params(model, ndarrays)
+    # Create model based on registry
+    model = get_model(
+        task_name,
+        model_name,
+        {"penalty": penalty, "max_iter": local_epochs},
+    )
 
     # Load the data
     partition_id = context.node_config["partition-id"]
     num_partitions = context.node_config["num-partitions"]
-    X_train, _, y_train, _ = load_data(partition_id, num_partitions)
+    X_train, _, y_train, _ = load_data(
+        partition_id,
+        num_partitions,
+        task_name=task_name,
+        dataset_path=dataset_path,
+        image_size=(image_height, image_width),
+        channels=channels,
+    )
+    num_classes = len(np.unique(y_train))
+    num_features = X_train.shape[1]
+
+    # Initialize local model params
+    set_initial_params(model, num_classes, num_features)
+
+    # Apply received parameters
+    ndarrays = msg.content["arrays"].to_numpy_ndarrays()
+    set_model_params(model, ndarrays)
 
     # Ignore convergence failure due to low local epochs
     with warnings.catch_warnings():
@@ -68,22 +86,41 @@ def train(msg: Message, context: Context):
 def evaluate(msg: Message, context: Context):
     """Evaluate the model on test data."""
 
-    # Create LogisticRegression Model
-    penalty = context.run_config["penalty"]
-    local_epochs = context.run_config["local-epochs"]
-    model = get_model(penalty, local_epochs)
+    run_cfg = context.run_config
+    task_name = run_cfg.get("task-name", "mnist-classification")
+    model_name = run_cfg.get("model-name", "logistic-regression")
+    dataset_path = run_cfg.get("dataset-path")
+    local_epochs = run_cfg.get("local-epochs", 1)
+    penalty = run_cfg.get("penalty", "l2")
+    image_height = run_cfg.get("input-height", 28)
+    image_width = run_cfg.get("input-width", 28)
+    channels = run_cfg.get("input-channels", 1)
 
-    # Setting initial parameters, akin to model.compile for keras models
-    set_initial_params(model)
-
-    # Apply received pararameters
-    ndarrays = msg.content["arrays"].to_numpy_ndarrays()
-    set_model_params(model, ndarrays)
+    model = get_model(
+        task_name,
+        model_name,
+        {"penalty": penalty, "max_iter": local_epochs},
+    )
 
     # Load the data
     partition_id = context.node_config["partition-id"]
     num_partitions = context.node_config["num-partitions"]
-    _, X_test, _, y_test = load_data(partition_id, num_partitions)
+    _, X_test, _, y_test = load_data(
+        partition_id,
+        num_partitions,
+        task_name=task_name,
+        dataset_path=dataset_path,
+        image_size=(image_height, image_width),
+        channels=channels,
+    )
+    num_classes = len(np.unique(y_test))
+    num_features = X_test.shape[1]
+
+    set_initial_params(model, num_classes, num_features)
+
+    # Apply received parameters
+    ndarrays = msg.content["arrays"].to_numpy_ndarrays()
+    set_model_params(model, ndarrays)
 
     # Evaluate the model on local data
     y_train_pred = model.predict(X_test)

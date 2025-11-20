@@ -162,6 +162,39 @@ export interface RunStartResponse {
   session_id?: string;
 }
 
+export interface ModelCatalogEntry {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export interface TaskCatalogEntry {
+  key: string;
+  label: string;
+  description: string;
+  defaults: {
+    input_height: number;
+    input_width: number;
+    input_channels: number;
+    num_classes: number;
+  };
+  models: ModelCatalogEntry[];
+}
+
+export interface CatalogResponse {
+  tasks: TaskCatalogEntry[];
+}
+
+export interface DatasetUploadResponse {
+  status: string;
+  dataset_path: string;
+  filename?: string | null;
+  project_id?: string | null;
+  task_name_submitted?: string | null;
+  file_size?: number;
+  extracted_files?: number;
+}
+
 export interface SupernodeStartResponse {
   status: string;
   pid?: string;

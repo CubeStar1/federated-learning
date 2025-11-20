@@ -3,3 +3,4 @@ psutil
 dotenv
 uvicorn
 fastapi
+python-multipart

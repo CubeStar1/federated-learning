@@ -18,17 +18,17 @@ const getClientBaseUrl = (): string => {
   return stripTrailingSlash(url);
 };
 
-const jsonHeaders = (): AxiosRequestConfig["headers"] => ({
-  "Content-Type": "application/json",
-  Accept: "application/json",
-});
-
 export const adminRequest = async <T>(
   config: AxiosRequestConfig
 ): Promise<T> => {
+  const headers = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...(config.headers ?? {}),
+  };
   const response: AxiosResponse<T> = await axios({
     baseURL: getAdminBaseUrl(),
-    headers: jsonHeaders(),
+    headers,
     ...config,
   });
   return response.data;
@@ -37,9 +37,14 @@ export const adminRequest = async <T>(
 export const clientRequest = async <T>(
   config: AxiosRequestConfig
 ): Promise<T> => {
+  const headers = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...(config.headers ?? {}),
+  };
   const response: AxiosResponse<T> = await axios({
     baseURL: getClientBaseUrl(),
-    headers: jsonHeaders(),
+    headers,
     ...config,
   });
   return response.data;

@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from typing import Any
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, Optional
+import zipfile
 
-from fastapi import FastAPI
+from fastapi import File, FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from flower_app.models import describe_models
+from flower_app.task import describe_tasks
 from utils.config import SETTINGS
+from utils.constants import DATASETS_DIR
 from utils.process_manager import ProcessManager
 from utils.schemas import RunStartRequest, SuperlinkStartRequest
 from utils.supabase import SupabaseAsync
@@ -46,6 +52,34 @@ async def health() -> dict[str, Any]:
     }
 
 
+@app.get("/catalog")
+async def catalog() -> dict[str, Any]:
+    tasks = []
+    for task in describe_tasks():
+        entry = dict(task)
+        entry["models"] = describe_models(task["key"])
+        tasks.append(entry)
+    return {"tasks": tasks}
+
+
+@app.post("/datasets/upload")
+async def upload_dataset(
+    file: UploadFile = File(...),
+    project_id: Optional[str] = Form(None),
+    task_name: Optional[str] = Form(None),
+) -> dict[str, Any]:
+    dataset_path, extracted_files, size_bytes = await _save_and_extract_dataset(file, project_id)
+    return {
+        "status": "uploaded",
+        "dataset_path": str(dataset_path),
+        "project_id": project_id,
+        "task_name_submitted": task_name,
+        "filename": file.filename,
+        "file_size": size_bytes,
+        "extracted_files": extracted_files,
+    }
+
+
 @app.post("/superlink/start")
 async def start_superlink(request: SuperlinkStartRequest) -> dict[str, str]:
     return await STATE.start_superlink(request)
@@ -69,6 +103,60 @@ async def stop_run() -> dict[str, str]:
 @app.get("/runs/active")
 async def active_run() -> dict[str, Any]:
     return {"run": STATE.run_info}
+
+
+def _safe_segment(value: Optional[str], fallback: str) -> str:
+    if not value:
+        return fallback
+    cleaned = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in value.strip().lower())
+    cleaned = cleaned.strip("-_")
+    return cleaned or fallback
+
+
+async def _save_and_extract_dataset(file: UploadFile, project_id: Optional[str]) -> tuple[Path, int, int]:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Uploaded dataset must have a filename")
+    if not file.filename.lower().endswith(".zip"):
+        raise HTTPException(status_code=400, detail="Only .zip archives are currently supported")
+
+    safe_project = _safe_segment(project_id, "shared")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
+    base_name = _safe_segment(Path(file.filename).stem, "dataset")
+
+    project_root = DATASETS_DIR / safe_project
+    project_root.mkdir(parents=True, exist_ok=True)
+
+    target_dir = project_root / f"{base_name}-{timestamp}"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    temp_zip_path = project_root / f"{base_name}-{timestamp}.zip"
+
+    size_bytes = 0
+    try:
+        with temp_zip_path.open("wb") as buffer:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                buffer.write(chunk)
+                size_bytes += len(chunk)
+
+        if not zipfile.is_zipfile(temp_zip_path):
+            raise HTTPException(status_code=400, detail="The uploaded file is not a valid ZIP archive")
+
+        with zipfile.ZipFile(temp_zip_path) as archive:
+            members = archive.namelist()
+            archive.extractall(target_dir)
+            extracted_files = len([member for member in members if not member.endswith("/")])
+    finally:
+        try:
+            temp_zip_path.unlink(missing_ok=True)
+        except TypeError:
+            # Python <3.12 compatibility for unlink
+            if temp_zip_path.exists():
+                temp_zip_path.unlink()
+
+    return target_dir.resolve(), extracted_files, size_bytes
 
 
 if __name__ == "__main__":
