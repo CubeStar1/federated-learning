@@ -1,0 +1,229 @@
+\documentclass[12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{times}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{eso-pic}
+\usepackage{transparent}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{tikz}
+\captionsetup[lstlisting]{labelformat=empty}
+
+% --- Custom Border Command ---
+\newcommand{\addborder}{%
+\AddToShipoutPictureBG*{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \draw[line width=1.5pt] 
+      ([shift={(1cm,-1cm)}]current page.north west) 
+      rectangle 
+      ([shift={(-1cm,1cm)}]current page.south east);
+    \draw[line width=0.5pt] 
+      ([shift={(1.1cm,-1.1cm)}]current page.north west) 
+      rectangle 
+      ([shift={(-1.1cm,1.1cm)}]current page.south east);
+  \end{tikzpicture}%
+}%
+}
+
+% --- 1. Page Geometry ---
+\geometry{
+    a4paper,
+    left=1in,
+    right=1in,
+    top=1in,
+    bottom=1in
+}
+
+% Set line spacing to 1.5
+\onehalfspacing
+
+% Remove paragraph indentation and add spacing between paragraphs
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.75em}
+
+
+
+
+% --- 2. Heading Formats & Chapter Spacing ---
+\titleformat{\chapter}[display]
+  {\normalfont\fontsize{18}{22}\bfseries}
+  {}
+  {-20pt} 
+  {\centering\MakeUppercase}
+
+% Chapter spacing - tighter to header
+% {left}{before-sep}{after-sep}
+\titlespacing*{\chapter}{0pt}{-30pt}{15pt} 
+
+\titleformat{\section}
+  {\normalfont\fontsize{16}{19}\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{17}\bfseries}{\thesubsection}{1em}{}
+
+% Set normal text size to 12pt Times New Roman
+\renewcommand{\normalsize}{\fontsize{12}{14}\selectfont}
+
+% --- 4. Title Page Definition ---
+\renewcommand{\maketitle}{
+    \begin{titlepage}
+        \addborder
+        \centering
+        \setlength{\parskip}{0pt} % Prevent global parskip from affecting title page
+        
+        % Institution Header
+        {\Large\bfseries RV COLLEGE OF ENGINEERING \textsuperscript{\textregistered}\par}
+        \vspace{0.1cm}
+        {\large\bfseries BENGALURU-560059\par}
+        \vspace{0.1cm}
+        (Autonomous Institution Affiliated to VTU, Belagavi)\par
+        \vspace{0.6cm}
+        
+        % RV Logo
+        \includegraphics[width=0.35\textwidth]{image.png}\par
+        \vspace{0.8cm}
+        
+        % Project Title
+        {\Large \textbf{Privacy-Preserving Federated Healthcare Diagnosis}\par}
+        \vspace{0.4cm}
+        {\large\bfseries AIML-PROJECT REPORT\par}
+        \vspace{0.6cm}
+        
+        % Submitted By
+        {\itshape Submitted By\par}
+        \vspace{0.4cm}
+        \textbf{Mohammed Huzaif S (1RV23IS073)}\par
+        \vspace{0.2cm}
+        \textbf{Avinash Anish (1RV23IS145)}\par
+        \vspace{1cm}
+        
+        % Guidance
+        {\large\bfseries Under the Guidance of\par}
+        \vspace{0.3cm}
+        {\bfseries Dr. Merin Meleet}\par
+        \vspace{0.1cm}
+        Associate Professor\par
+        \vspace{0.05cm}
+        Dept. of ISE, RV College of Engineering\par
+        
+        \vfill
+        
+        % Degree Fulfillment
+        {\itshape in partial fulfillment for the award of degree of\par}
+        \vspace{0.2cm}
+        {\large\bfseries\itshape Bachelor of Engineering\par}
+        \vspace{0.1cm}
+        {\itshape in\par}
+        \vspace{0.1cm}
+        {\large\bfseries Information Science and Engineering\par}
+        \vspace{0.4cm}
+        {\bfseries 2025-2026\par}
+    \end{titlepage}
+}
+
+% --- 5. Document Content ---
+\begin{document}
+
+\maketitle
+
+% No headers/footers and no page numbers for preliminary pages
+\pagestyle{empty}
+\pagenumbering{gobble} 
+
+\newpage
+\input{sections/certificate}
+\newpage
+\input{sections/declaration}
+\newpage
+\input{sections/acknowledgements}
+\newpage
+\input{sections/abstract}
+
+
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+
+\newpage
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\thispagestyle{empty}
+
+\newpage
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\thispagestyle{empty}
+
+\newpage
+\input{sections/abbreviations}
+\thispagestyle{empty}
+
+% Switch to Arabic numerals for main content
+\newpage
+\pagenumbering{arabic}
+
+% --- Header and Footer Configuration for Main Content ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Privacy-Preserving Federated Learning}
+\fancyhead[R]{AIML}
+\fancyfoot[L]{Dept. of ISE, RVCE}
+\fancyfoot[C]{2025-26}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+
+% Override the plain style for chapter pages in the main content
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyhead[L]{Privacy-Preserving Federated Learning}
+    \fancyhead[R]{AIML}
+    \fancyfoot[L]{Dept. of ISE, RVCE}
+    \fancyfoot[C]{2025-26}
+    \fancyfoot[R]{\thepage}
+    \renewcommand{\headrulewidth}{1pt}
+    \renewcommand{\footrulewidth}{1pt}
+}
+
+\chapter{Introduction}
+\input{sections/chapter1_introduction.tex}
+
+\chapter{Literature Survey}
+\input{sections/chapter2_literature_survey.tex}
+
+\chapter{Design of the System}
+\input{sections/chapter3_design.tex}
+
+\chapter{Implementation and Testing}
+\input{sections/chapter4_implementation.tex}
+
+\chapter{Results and Analysis}
+\input{sections/chapter5_results.tex}
+
+\chapter{Conclusion and Future Work}
+\input{sections/chapter6_conclusion.tex}
+
+\renewcommand{\bibname}{References}
+\addcontentsline{toc}{chapter}{References}
+\input{sections/references.tex}
+
+\newpage
+\appendix
+\chapter{Appendix}
+\input{sections/appendix.tex}
+
+
+\end{document}
