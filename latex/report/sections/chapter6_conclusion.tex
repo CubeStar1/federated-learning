@@ -1,47 +1,23 @@
 \section{Conclusion}
 
-This project successfully developed a privacy-preserving federated learning platform enabling hospitals to collaboratively train accurate AI models without sharing patient data, addressing the critical conflict between privacy regulations (HIPAA, GDPR, DPDPA) and the need for large, diverse medical datasets.
+This project developed a privacy-preserving federated learning platform enabling hospitals to collaboratively train accurate AI models without sharing patient data, reconciling privacy regulations (HIPAA, GDPR, DPDPA) with the need for large, diverse datasets.
 
 \textbf{Key Achievements:}
-
 \begin{itemize}
-    \item \textbf{Novel PAWA Algorithm:} Performance-Aware Weighted Aggregation achieves 0.7-1.4\% accuracy improvement over FedAvg baseline (94.2-96.8\% vs 92.8-96.1\%) and converges 15-20\% faster (35 vs 42 rounds) through four-factor adaptive weighting (performance=40\%, size=30\%, quality=20\%, progress=10\%)
-    \item \textbf{High Accuracy:} Federated models reach 98-99\% of centralized accuracy across three tasks—TB detection (95.7\% vs 96.1\%), diabetic retinopathy (94.2\% vs 95.2\%), brain tumor classification (96.8\% vs 97.4\%)—exceeding the target thresholds
-    \item \textbf{Communication Efficiency:} PAWA reduces communication overhead by 58\% and round latency to 42 seconds with 4 hospitals, demonstrating practical scalability
-    \item \textbf{Democratized Access:} Smaller hospitals with limited datasets achieve significant accuracy improvements through collaboration, effectively accessing models trained on 14,000+ combined cases across institutions.
-    \item \textbf{Production-Ready Deployment:} Docker-based architecture using Flower, FastAPI, Next.js, and Supabase enables simplified deployment requiring no ML expertise, with real-time monitoring dashboards accessible to non-technical staff
-    \item \textbf{Automated Compliance:} Comprehensive audit logging, encrypted TLS communication, role-based access control, and privacy-preserving preprocessing (metadata stripping) support HIPAA/GDPR requirements
+    \item \textbf{PAWA Algorithm:} Adaptive four-factor weighted aggregation (performance=40\%, size=30\%, quality=20\%, progress=10\%) improves accuracy by 1.4--1.5\% over FedAvg and converges 15--20\% faster.
+    \item \textbf{High Accuracy:} Models reach 96--99\% of centralized accuracy across TB detection, diabetic retinopathy, and brain tumor classification.
+    \item \textbf{Communication Efficiency:} Reduces round latency to 42s and communication overhead by 58\%.
+    \item \textbf{Democratized Access:} Smaller hospitals improve by 12--15\% using federated models trained on 14,000+ combined images.
+    \item \textbf{Production-Ready Deployment:} Docker, Flower, FastAPI, Next.js, and Supabase enable simple deployment with real-time dashboards.
+    \item \textbf{Compliance:} Audit logging, TLS encryption, RBAC, and privacy-preserving preprocessing support regulatory standards.
 \end{itemize}
 
-\textbf{Impact:} The platform democratizes healthcare AI by enabling resource-constrained institutions to participate in collaborative model training while maintaining complete data sovereignty. PAWA's adaptive weighting effectively handles medical data heterogeneity (class imbalance, domain shift, demographic variations) better than baseline algorithms, providing a pathway for robust model development in clinical settings.
-
-This work bridges the gap between federated learning research and clinical deployment, delivering the first healthcare-optimized platform combining automated compliance, intuitive interfaces, adaptive aggregation algorithms, and simplified deployment. The successful demonstration across three medical imaging modalities establishes a practical pathway for broader federated learning adoption in healthcare, enabling privacy-preserving collaborative AI development at scale.
+The platform enables resource-constrained institutions to participate in collaborative AI while maintaining data sovereignty, effectively bridging federated learning research and clinical deployment.
 
 \section{Limitations}
 
-\textbf{Scalability Constraints:} Tested with 4 hospitals; performance with 10+ clients unvalidated. Round latency increases linearly, potentially becoming prohibitive at larger scales. Coordinator failure halts training with no automated failover mechanism.
-
-\textbf{Dataset and Modality Scope:} Limited to three imaging tasks (TB X-rays, diabetic retinopathy, brain MRI) with relatively small datasets (7,000, 3,662, 3,624 images respectively). Generalization to other modalities (CT, ultrasound, pathology slides, mammography) unverified. Architecture optimized for ResNet-50; other architectures require modifications.
-
-\textbf{Computational and Network Requirements:} GPU acceleration significantly improves performance; CPU-only training is 5-10$\times$ slower, limiting resource-constrained institutions. Requires reliable internet (10+ Mbps upload); intermittent connectivity challenges participation with no offline training mechanism.
-
-\textbf{Privacy Limitations:} No formal differential privacy implementation with epsilon-delta guarantees. Potential gradient inversion attacks not addressed despite encrypted communication. PAWA requires validation metrics transmission (8-12\% overhead), increasing information exposure.
-
-\textbf{Compliance and Production Gaps:} Audit logging implemented but no automated HIPAA/GDPR report generation; hospitals must independently verify regulatory compliance. Tested in controlled environments, not actual clinical settings. EHR/PACS integration requires additional development. PAWA algorithm requires hyperparameter tuning expertise for optimal performance.
+The system was tested with only 2--4 hospitals, limiting scalability evaluation. Datasets were small (639--2,750 images) and restricted to three modalities; generalization to other imaging types remains unverified. CPU-only training is slow, and reliable internet is required. Privacy is preserved but lacks formal differential privacy guarantees. Audit logging supports compliance, but automated report generation and EHR/PACS integration are not implemented. PAWA requires hyperparameter tuning for optimal performance.
 
 \section{Future Scope}
 
-\textbf{Enhanced Privacy:} Implement differential privacy with epsilon-delta guarantees and moment accountant methods, secure multi-party computation for cryptographic aggregation, trusted execution environments (Intel SGX) for hardware-based security, and homomorphic encryption for encrypted model updates. Extend PAWA to incorporate privacy budgets in weight computation.
-
-\textbf{Expanded Capabilities:} Support additional medical imaging modalities (mammography, CT, ultrasound, pathology slides), integrate DICOM/NIfTI format handling and HL7 FHIR standards, develop multi-modal learning combining imaging with EHR data (demographics, lab results, vitals) through vertical federated learning. Extend PAWA to handle multi-modal weight aggregation across heterogeneous data types.
-
-\textbf{Advanced Algorithms:} Implement personalized federated learning with client-specific adaptation layers, explore meta-learning for faster adaptation to new tasks, develop continual learning approaches for evolving diseases, and investigate federated transfer learning across related medical tasks. Enhance PAWA with meta-learning for dynamic factor weight optimization.
-
-\textbf{Scalability Improvements:} Implement hierarchical federated learning for 50+ hospitals with regional coordinators, develop distributed coordinator architecture with automated failover, enable asynchronous aggregation allowing subset participation per round, and optimize PAWA weight computation for large-scale deployments with efficient client history management.
-
-\textbf{Clinical Integration:} Develop EHR/PACS connectors for seamless data ingestion, create real-time diagnostic inference APIs for production deployment, integrate with clinical decision support systems, implement automated HIPAA/GDPR compliance report generation, and build patient consent management workflows. Deploy PAWA-based federated models in prospective clinical trials.
-
-\textbf{Interpretability and Validation:} Add federated explainable AI providing Grad-CAM visualizations and SHAP values for diagnostic transparency, establish cross-institutional validation benchmarks, conduct prospective clinical trials demonstrating real-world efficacy, and publish peer-reviewed validation studies. Develop PAWA weight interpretation dashboards explaining aggregation decisions.
-
-\textbf{Emerging Technologies:} Explore blockchain for immutable audit trails and decentralized model versioning, implement edge computing deployments on mobile diagnostics and wearables for point-of-care AI, investigate quantum-resistant cryptography for long-term security, and develop federated AutoML for automated architecture and hyperparameter optimization including PAWA factor weights.
-
+Future work includes implementing differential privacy, secure multi-party computation, and homomorphic encryption. The platform can be extended to additional imaging modalities, multi-modal learning combining imaging and EHR data, personalized federated learning, meta-learning, and continual learning. Scalability improvements include hierarchical federated learning and asynchronous aggregation for 50+ hospitals. Clinical integration can be enhanced with EHR/PACS connectors, real-time inference APIs, automated compliance reporting, and prospective trials. Further development could include federated explainable AI, blockchain-based audit trails, edge computing deployment, and AutoML for architecture and PAWA factor optimization.
