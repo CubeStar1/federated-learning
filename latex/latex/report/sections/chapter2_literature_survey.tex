@@ -1,0 +1,92 @@
+\section{Literature Review}
+
+Federated learning was first formalized by McMahan et al.~\cite{McMahan2017}, who introduced the Federated Averaging (FedAvg) algorithm. FedAvg significantly reduced communication costs by 10--100$\times$ compared to federated stochastic gradient descent while achieving near-centralized accuracy on MNIST and CIFAR-10 datasets. Despite its efficiency, subsequent studies showed that FedAvg performs poorly under highly non-IID data distributions, a condition commonly observed in multi-institutional healthcare environments~\cite{Zhao2018,Li2020}.
+
+To mitigate aggregation issues under heterogeneous data distributions, Wang et al.~\cite{Wang2020} proposed Federated Matched Averaging (FedMA), which performs neuron-wise alignment using the Hungarian algorithm prior to aggregation. Their results demonstrated a 5--15\% accuracy improvement over FedAvg on non-IID datasets. However, FedMA introduces substantial computational overhead (30--50\%) and is limited primarily to CNN and LSTM architectures, making it less suitable for large-scale or transformer-based medical models.
+
+Kairouz et al.~\cite{Kairouz2021} provided a comprehensive survey of federated learning, analyzing over 150 algorithms and identifying core challenges such as statistical heterogeneity, privacy leakage, fairness, and system heterogeneity. While this survey establishes a strong theoretical foundation, it does not address healthcare-specific operational challenges such as regulatory compliance, deployment simplicity, or usability for non-technical clinical staff.
+
+From a systems perspective, Liu et al.~\cite{Liu2021} introduced FATE, an industrial-grade federated learning framework supporting privacy-preserving techniques such as homomorphic encryption and secure multi-party computation. Although FATE is suitable for enterprise-scale deployments, its reliance on Kubernetes-based orchestration and absence of healthcare-oriented workflows present adoption barriers for hospitals.
+
+Beutel et al.~\cite{Beutel2020} proposed Flower, a lightweight and extensible federated learning framework that supports multiple machine learning backends and custom aggregation strategies. Flower has gained popularity in academic research due to its modular design; however, it lacks production-ready healthcare features such as automated compliance auditing, clinical dashboards, and regulatory reporting.
+
+The feasibility of federated learning in medical imaging was demonstrated by Sheller et al.~\cite{Sheller2020}, who achieved 99\% of centralized model performance in brain tumor segmentation across ten institutions. While this work validates federated learning for healthcare, it relied heavily on manual coordination and significant technical expertise at each participating site, limiting scalability.
+
+Recent research has explored adaptive aggregation and privacy-preserving mechanisms. Haripriya et al.~\cite{Haripriya2025} proposed an adaptive aggregation strategy that dynamically adjusts training based on convergence behavior, reducing training rounds by 15--20\%. However, this approach introduces additional computational overhead and lacks large-scale deployment evaluation. Wei et al.~\cite{Wei2020} analyzed differential privacy in federated learning, demonstrating a 3--8\% accuracy degradation due to noise injection, highlighting the privacy--utility trade-off in sensitive domains such as healthcare.
+
+Li et al.~\cite{Li2018} introduced FedProx, which incorporates a proximal term to address system heterogeneity by allowing partial client participation. Although effective in heterogeneous environments, FedProx primarily targets system-level variability rather than statistical data heterogeneity. Mo et al.~\cite{Mo2021} explored hardware-based security using trusted execution environments, achieving lower overhead compared to cryptographic approaches, but such methods depend on specialized hardware and remain vulnerable to side-channel attacks.
+
+
+\section{Functional Requirements}
+
+\textbf{FR1: Coordinator-Based Training Orchestration}  
+The system shall implement a central coordinator responsible for initiating training rounds, distributing global models, collecting encrypted client updates, performing aggregation, and broadcasting updated models.
+
+\textbf{FR2: Local Model Training at Hospitals}  
+Each hospital node shall locally train a ResNet-50 model on private medical imaging data using PyTorch, ensuring raw patient data never leaves institutional boundaries.
+
+\textbf{FR3: Secure Communication}  
+All communications between coordinator and clients shall use HTTPS/TLS encryption with authenticated WebSocket connections to ensure confidentiality, integrity, and low-latency updates.
+
+\textbf{FR4: Multiple Aggregation Algorithms}  
+The platform shall support multiple aggregation strategies including FedAvg, FedOpt, FedMA, FedProx, and a novel performance-aware aggregation algorithm optimized for non-IID medical data.
+
+\textbf{FR5: Real-Time Monitoring Dashboard}  
+The system shall provide real-time visualization of training progress, including accuracy, loss, round number, and convergence indicators, accessible to non-technical users.
+
+\textbf{FR6: Privacy Preservation and Audit Logging}  
+The platform shall enforce strict privacy guarantees by transmitting only encrypted model parameters and maintaining tamper-evident audit logs for compliance verification.
+
+\textbf{FR7: Medical Image Preprocessing}  
+Standardized preprocessing pipelines shall be applied locally, including resizing, normalization, metadata stripping, augmentation, and quality validation.
+
+\textbf{FR8: Dynamic Hospital Management}  
+Hospitals shall be able to join or leave training dynamically with fault tolerance and straggler handling.
+
+\textbf{FR9: Model Versioning and Checkpointing}  
+The system shall maintain versioned global models with automatic checkpointing and rollback support.
+
+\textbf{FR10: Performance Benchmarking}  
+The platform shall track accuracy, convergence speed, communication overhead, and training time across aggregation strategies.
+
+\textbf{FR11: Compliance Reporting}  
+Automated compliance reports shall be generated to support HIPAA, GDPR, and DPDPA audits.
+
+\section{Hardware and Software Requirements}
+
+\subsection{Hardware Requirements}
+
+\begin{itemize}
+    \item \textbf{Coordinator Server:}
+    \begin{itemize}
+        \item 8+ core CPU (16+ recommended)
+        \item 16 GB RAM (32 GB recommended)
+        \item 100 GB SSD storage
+        \item 100 Mbps network connectivity
+    \end{itemize}
+    \item \textbf{Hospital Client Node:}
+    \begin{itemize}
+        \item 4+ core CPU
+        \item 8 GB RAM (16 GB recommended)
+        \item 50 GB SSD storage
+        \item Optional NVIDIA GPU (6 GB+ VRAM)
+        \item Minimum 10 Mbps upload bandwidth
+    \end{itemize}
+\end{itemize}
+
+\subsection{Software Requirements}
+
+\begin{itemize}
+    \item \textbf{Frameworks:} Flower v1.5+, PyTorch v2.0+, FastAPI, Next.js 15
+    \item \textbf{Languages:} Python 3.9+, TypeScript 5.0+, JavaScript
+    \item \textbf{Containerization:} Docker v24.0+
+    \item \textbf{Database:} Supabase (PostgreSQL 14+)
+    \item \textbf{GPU Support:} CUDA 11.8+, cuDNN 8.6+
+    \item \textbf{Libraries:} NumPy, torchvision, Pillow, JWT, bcrypt
+\end{itemize}
+
+\section{Summary}
+
+This section reviewed existing federated learning algorithms, platforms, and privacy mechanisms, highlighting their strengths and limitations in healthcare settings. While prior work demonstrates the feasibility of federated learning and proposes solutions for heterogeneity, privacy, and security, none fully address healthcare-specific requirements such as automated compliance, operational simplicity, and usability for non-technical stakeholders.
+
+The functional requirements defined a comprehensive, privacy-preserving federated learning system tailored for medical imaging applications, emphasizing secure orchestration, real-time monitoring, dynamic hospital participation, and regulatory compliance. Hardware and software requirements were specified to support both resource-constrained and well-equipped hospitals, ensuring scalable and inclusive deployment across diverse healthcare environments.

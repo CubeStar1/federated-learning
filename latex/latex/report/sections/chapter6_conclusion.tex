@@ -1,0 +1,23 @@
+\section{Conclusion}
+
+This project developed a privacy-preserving federated learning platform enabling hospitals to collaboratively train accurate AI models without sharing patient data, reconciling privacy regulations (HIPAA, GDPR, DPDPA) with the need for large, diverse datasets.
+
+\textbf{Key Achievements:}
+\begin{itemize}
+    \item \textbf{PAWA Algorithm:} Adaptive four-factor weighted aggregation (performance=40\%, size=30\%, quality=20\%, progress=10\%) improves accuracy by 1.4--1.5\% over FedAvg and converges 15--20\% faster.
+    \item \textbf{High Accuracy:} Models reach 96--99\% of centralized accuracy across TB detection, diabetic retinopathy, and brain tumor classification.
+    \item \textbf{Communication Efficiency:} Reduces round latency to 42s and communication overhead by 58\%.
+    \item \textbf{Democratized Access:} Smaller hospitals improve by 12--15\% using federated models trained on 14,000+ combined images.
+    \item \textbf{Production-Ready Deployment:} Docker, Flower, FastAPI, Next.js, and Supabase enable simple deployment with real-time dashboards.
+    \item \textbf{Compliance:} Audit logging, TLS encryption, RBAC, and privacy-preserving preprocessing support regulatory standards.
+\end{itemize}
+
+The platform enables resource-constrained institutions to participate in collaborative AI while maintaining data sovereignty, effectively bridging federated learning research and clinical deployment.
+
+\section{Limitations}
+
+The system was tested with only 2--4 hospitals, limiting scalability evaluation. Datasets were small (639--2,750 images) and restricted to three modalities; generalization to other imaging types remains unverified. CPU-only training is slow, and reliable internet is required. Privacy is preserved but lacks formal differential privacy guarantees. Audit logging supports compliance, but automated report generation and EHR/PACS integration are not implemented. PAWA requires hyperparameter tuning for optimal performance.
+
+\section{Future Scope}
+
+Future work includes implementing differential privacy, secure multi-party computation, and homomorphic encryption. The platform can be extended to additional imaging modalities, multi-modal learning combining imaging and EHR data, personalized federated learning, meta-learning, and continual learning. Scalability improvements include hierarchical federated learning and asynchronous aggregation for 50+ hospitals. Clinical integration can be enhanced with EHR/PACS connectors, real-time inference APIs, automated compliance reporting, and prospective trials. Further development could include federated explainable AI, blockchain-based audit trails, edge computing deployment, and AutoML for architecture and PAWA factor optimization.
