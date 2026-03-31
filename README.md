@@ -186,9 +186,10 @@ See the included architecture diagram for the full end-to-end flow. At a high le
 
 > [!IMPORTANT]
 > Certain core components of this project are not publicly included in this repository to protect proprietary software architecture. These include:
-> – **Flower Orchestration & Scaling Logic** (the `flower-app` directory)
-> – **Admin & Client Management APIs** (the `admin-server` and `client-server` directories)
-> – **Supabase Database Schema & Migrations** (the `db` directory)
+> 
+> *   **Flower Orchestration & Scaling Logic** (the `flower-app` directory)
+> *   **Admin & Client Management APIs** (the `admin-server` and `client-server` directories)
+> *   **Supabase Database Schema & Migrations** (the `db` directory)
 > 
 > If you’re interested in accessing these for academic, research, or collaboration purposes, please feel free to contact me at **avinash.anish05@gmail.com**.
 
